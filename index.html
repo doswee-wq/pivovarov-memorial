@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OlegOS ULTIMATE - Fix Edition</title>
+    <style>
+        :root {
+            --bg: #050510;
+            --primary: #0f0;
+            --secondary: #0ff;
+            --danger: #f00;
+            --window-bg: rgba(0, 15, 0, 0.95);
+            --window-border: #0f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', monospace; user-select: none; }
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 60%),
+                linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            color: var(--primary);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Безопасный CRT Effect */
+        .crt-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 9999; pointer-events: none; opacity: 0.5;
+        }
+
+        /* Desktop & Icons */
+        .desktop { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, 100px); gap: 20px; z-index: 10; position: relative; }
+        .icon { 
+            background: transparent; border: none; outline: none; 
+            display: flex; flex-direction: column; align-items: center; 
+            cursor: pointer; text-align: center; transition: 0.1s; 
+            color: var(--primary); font-family: inherit; z-index: 20;
+        }
+        .icon:hover { background: rgba(0, 255, 0, 0.1); border-radius: 10px; }
+        .icon:active { transform: scale(0.9); }
+        .icon-emoji { font-size: 3.5rem; filter: drop-shadow(0 0 5px var(--primary)); pointer-events: none; }
+        .icon-text { font-size: 0.8rem; background: rgba(0,0,0,0.8); padding: 4px 6px; margin-top: 5px; border: 1px solid var(--primary); pointer-events: none; }
+
+        /* Window System */
+        .window {
+            position: absolute; top: 5%; left: 5%; width: 600px; max-width: 90vw;
+            background: var(--window-bg); border: 2px solid var(--window-border);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            display: none; flex-direction: column; z-index: 50;
+            overflow: hidden;
+        }
+        .window-header {
+            background: var(--primary); color: #000; padding: 8px 10px;
+            display: flex; justify-content: space-between; font-weight: bold; cursor: move; align-items: center;
+        }
+        .close-btn { 
+            background: #000; color: var(--primary); border: 1px solid var(--primary); 
+            padding: 2px 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .close-btn:active { background: var(--danger); color: #fff; border-color: var(--danger); }
+        .window-content { padding: 15px; height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; position: relative; }
+
+        /* Telegram Widget */
+        .tg-widget {
+            position: fixed; bottom: 50px; right: 20px; width: 300px; max-width: 90vw;
+            background: rgba(0, 20, 30, 0.95); border: 1px solid var(--secondary);
+            z-index: 100; box-shadow: 0 0 15px var(--secondary); display: flex; flex-direction: column;
+        }
+        .tg-header { background: var(--secondary); color: #000; padding: 5px; font-weight: bold; }
+        .tg-body { height: 200px; overflow-y: auto; padding: 10px; font-size: 0.8rem; color: var(--secondary); display: flex; flex-direction: column; gap: 10px; }
+        .tg-msg { background: rgba(0, 255, 255, 0.1); padding: 8px; border-left: 2px solid var(--secondary); animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* Taskbar */
+        .taskbar {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 40px;
+            background: #000; border-top: 1px solid var(--primary);
+            display: flex; align-items: center; padding: 0 10px; z-index: 1000;
+        }
+        .start-btn { background: var(--primary); color: #000; padding: 5px 15px; font-weight: bold; border: none; cursor: pointer; }
+        .start-btn:active { transform: scale(0.95); }
+        .clock { margin-left: auto; color: var(--primary); }
+
+        /* --- APP: CLICKER --- */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 10px; }
+        .stat-box { border: 1px dashed var(--primary); padding: 10px; background: rgba(0,255,0,0.05); }
+        .btn-main { background: #000; color: var(--primary); border: 2px solid var(--primary); padding: 15px; font-size: 1.1rem; cursor: pointer; text-transform: uppercase; transition: 0.1s; font-weight: bold; }
+        .btn-main:active { transform: scale(0.95); background: var(--primary); color: #000; }
+        .shop-grid { display: grid; gap: 10px; }
+        .shop-item { border: 1px solid #333; padding: 10px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); }
+        .shop-btn { background: #222; color: #fff; border: 1px solid var(--primary); padding: 10px 15px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        .shop-btn:active { transform: scale(0.9); }
+        
+        .risk-bar-bg { width: 100%; height: 25px; border: 1px solid var(--danger); position: relative; margin-top: 5px; background: #000; }
+        .risk-bar { width: 0%; height: 100%; background: var(--danger); transition: 0.3s; }
+        .risk-text { position: absolute; top: 0; left: 50%; transform: translateX(-50%); color: #fff; font-size: 0.9rem; line-height: 25px; text-shadow: 1px 1px #000; font-weight: bold; width: 100%; text-align: center;}
+
+        /* --- APP: ARCHIVE --- */
+        .redacted { background: var(--primary); color: var(--primary); transition: 0.3s; cursor: pointer; padding: 0 5px; }
+        .redacted:hover, .redacted:active { background: transparent; color: #fff; }
+        .detective-board { border: 1px dashed var(--danger); padding: 15px; text-align: center; margin: 15px 0; background: rgba(255,0,0,0.05); }
+        .play-audio { background: transparent; border: 1px solid var(--secondary); color: var(--secondary); padding: 15px; cursor: pointer; width: 100%; font-size: 1rem; font-weight: bold; transition: 0.1s;}
+        .play-audio:active { background: var(--secondary); color: #000; transform: scale(0.98); }
+
+        /* --- APP: FSIN MARKET --- */
+        .fsin-item { border: 1px dotted var(--primary); padding: 15px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; background: rgba(0,255,0,0.05); }
+        .fsin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* --- APP: 3D MATRIX --- */
+        .cube-container { perspective: 800px; width: 150px; height: 150px; margin: 50px auto; }
+        .cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; animation: rotateCube 10s infinite linear; }
+        .face { position: absolute; width: 150px; height: 150px; background: rgba(0, 255, 0, 0.1); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: inset 0 0 20px var(--primary); opacity: 0.8; }
+        .front  { transform: translateZ(75px); }
+        .back   { transform: rotateY(180deg) translateZ(75px); }
+        .right  { transform: rotateY(90deg) translateZ(75px); }
+        .left   { transform: rotateY(-90deg) translateZ(75px); }
+        .top    { transform: rotateX(90deg) translateZ(75px); }
+        .bottom { transform: rotateX(-90deg) translateZ(75px); }
+        @keyframes rotateCube { from { transform: rotateX(0) rotateY(0); } to { transform: rotateX(360deg) rotateY(360deg); } }
+
+        /* BSOD */
+        .bsod { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0000aa; color: #fff; z-index: 10000; flex-direction: column; justify-content: center; align-items: center; font-family: 'Consolas', monospace; text-align: center; padding: 20px; }
+        .bsod h1 { font-size: 3rem; background: #fff; color: #0000aa; padding: 10px 20px; margin-bottom: 20px; }
+
+        @media (max-width: 768px) {
+            .window { width: 100%; left: 0 !important; top: 0 !important; height: calc(100vh - 40px); border: none; }
+            .window-content { height: 100%; padding-bottom: 100px; }
+            .tg-widget { width: 100%; right: 0; bottom: 40px; border-left: none; border-right: none; }
+            .fsin-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body ontouchstart="">
+    <div class="crt-overlay"></div>
+
+    <!-- DESKTOP ICONS (Сделаны кнопками для 100% кликабельности) -->
+    <div class="desktop">
+        <button class="icon" onclick="openWindow('app-clicker')">
+            <div class="icon-emoji">📈</div>
+            <div class="icon-text">SIM-BOX.exe</div>
+        </button>
+        <button class="icon" onclick="openWindow('app-archive')">
+            <div class="icon-emoji">🗄️</div>
+            <div class="icon-text">DELO_2010.pdf</div>
+        </button>
+        <button class="icon" onclick="openWindow('app-market')">
+            <div class="icon-emoji">🛍️</div>
+            <div class="icon-text">FSIN_Shop.tor</div>
+        </button>
+        <button class="icon" onclick="openWindow('app-matrix')">
+            <div class="icon-emoji">🌐</div>
+            <div class="icon-text">MatrixView</div>
+        </button>
+        <button class="icon" onclick="triggerBSOD('USER_INITIATED_WIPE')">
+            <div class="icon-emoji">🧨</div>
+            <div class="icon-text">ОЧИСТИТЬ ЛОГИ</div>
+        </button>
+    </div>
+
+    <!-- APP 1: SIM-BOX MANAGER (CLICKER) -->
+    <div id="app-clicker" class="window">
+        <div class="window-header">
+            <span>[root@podolsk] SIM-Box Manager</span>
+            <button class="close-btn" onclick="closeWindow('app-clicker')">X</button>
+        </div>
+        <div class="window-content">
+            <div class="stats-grid">
+                <div class="stat-box">БАЛАНС<br><strong id="c-bal" style="font-size:1.5rem">0 ₽</strong></div>
+                <div class="stat-box">ДОХОД<br><strong id="c-inc" style="font-size:1.5rem">0 ₽/с</strong></div>
+            </div>
+            
+            <div style="color:var(--danger); font-weight:bold;">ВНИМАНИЕ ОПЕРГРУППЫ:</div>
+            <div class="risk-bar-bg">
+                <div class="risk-bar" id="c-risk-bar"></div>
+                <div class="risk-text" id="c-risk-text">0% - СПОКОЙНО</div>
+            </div>
+
+            <button class="btn-main" onclick="clickESIM()">[+] ЗАРЕГИСТРИРОВАТЬ eSIM (+10 ₽)</button>
+            <hr style="border-color: #333; margin: 5px 0;">
+            <div class="shop-grid" id="c-shop"></div>
+        </div>
+    </div>
+
+    <!-- APP 2: SECRET ARCHIVE -->
+    <div id="app-archive" class="window">
+        <div class="window-header">
+            <span>ДЕЛО №2010-ОП</span>
+            <button class="close-btn" onclick="closeWindow('app-archive')">X</button>
+        </div>
+        <div class="window-content">
+            <h2 style="color:var(--danger); text-align:center;">УГОЛОВНОЕ ДЕЛО: ПИВОВАРОВ О.</h2>
+            <p>Фигурант: Олег Пивоваров. Год рождения: <span class="redacted">2010</span>.</p>
+            <p>Образование: <span class="redacted">Курчатовская школа</span> (выпускник).</p>
+            <p>Сводка: Начинал с малой регистрации <span class="redacted">виртуальных eSIM</span>. Впоследствии организовал масштабную серверную инфраструктуру, известную как <span class="redacted">SIM-боксы</span>.</p>
+            
+            <div class="detective-board">
+                <p>📍 Курчатовская школа <br>⬇<br> 📍 <span class="redacted">Подольск (Подвал)</span> <br>⬇<br> 📍 СИЗО №3</p>
+            </div>
+
+            <button class="play-audio" onclick="playAudio()">[▶] ПРОСЛУШАТЬ ПЕРЕХВАТ ЗВОНКА</button>
+            <p id="audio-sub" style="display:none; color:var(--secondary); font-style:italic; padding: 10px; border: 1px solid var(--secondary);">> "Абонент Олег Пивоваров вне зоны действия сети. Переадресация в камеру СИЗО номер три."</p>
+        </div>
+    </div>
+
+    <!-- APP 3: FSIN MARKET -->
+    <div id="app-market" class="window">
+        <div class="window-header">
+            <span>FSIN-MARKET (Darknet)</span>
+            <button class="close-btn" onclick="closeWindow('app-market')">X</button>
+        </div>
+        <div class="window-content">
+            <h3 style="text-align:center; color:#f0f;">ПОДГОНЫ В СИЗО №3</h3>
+            <div class="fsin-grid">
+                <div class="fsin-item">
+                    <span style="font-size:2rem">☕</span>
+                    <span>Чифирь Энергетик<br><b>250 ₽</b></span>
+                    <button class="shop-btn" style="width:100%" onclick="buyFsin(250, this)">Купить</button>
+                </div>
+                <div class="fsin-item">
+                    <span style="font-size:2rem">🥖</span>
+                    <span>Ножовка в батоне<br><b>15,000 ₽</b></span>
+                    <button class="shop-btn" style="width:100%" onclick="buyFsin(15000, this)">Купить</button>
+                </div>
+                <div class="fsin-item">
+                    <span style="font-size:2rem">📱</span>
+                    <span>Телефон в тапке<br><b>50,000 ₽</b></span>
+                    <button class="shop-btn" style="width:100%" onclick="buyFsin(50000, this)">Купить</button>
+                </div>
+                <div class="fsin-item">
+                    <span style="font-size:2rem">📜</span>
+                    <span>УДО от Директора<br><b>9,999,999 ₽</b></span>
+                    <button class="shop-btn" style="width:100%" onclick="buyFsin(9999999, this)">Купить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP 4: 3D MATRIX -->
+    <div id="app-matrix" class="window">
+        <div class="window-header">
+            <span>SIM-BOX 3D</span>
+            <button class="close-btn" onclick="closeWindow('app-matrix')">X</button>
+        </div>
+        <div class="window-content" style="overflow: hidden; display: flex; justify-content: center; align-items: center;">
+            <div class="cube-container">
+                <div class="cube">
+                    <div class="face front">SIM_01</div>
+                    <div class="face back">SIM_02</div>
+                    <div class="face right">TRAFFIC</div>
+                    <div class="face left">ENCRYPT</div>
+                    <div class="face top">PROXY</div>
+                    <div class="face bottom">ROOT</div>
+                </div>
+            </div>
+            <div style="position:absolute; bottom:20px; width:100%; text-align:center; font-weight:bold;">УСТАНОВЛЕНО СОЕДИНЕНИЕ: 14,392 УЗЛОВ</div>
+        </div>
+    </div>
+
+    <!-- TELEGRAM OVERLAY -->
+    <div class="tg-widget">
+        <div class="tg-header">💬 TG: Секретный Чат</div>
+        <div class="tg-body" id="tg-body">
+            <div class="tg-msg"><b>Система:</b> Шифрование активно.</div>
+        </div>
+    </div>
+
+    <!-- TASKBAR -->
+    <div class="taskbar">
+        <button class="start-btn">OlegOS Start</button>
+        <div class="clock" id="clock">00:00</div>
+    </div>
+
+    <!-- BSOD -->
+    <div id="bsod" class="bsod">
+        <h1>СИСТЕМА ЗАБЛОКИРОВАНА</h1>
+        <p id="bsod-reason" style="font-size: 1.2rem; color: #f0f;">КРИТИЧЕСКАЯ ОШИБКА: 0x000FSIN</p>
+        <br>
+        <p>ИМЯ ПРОЦЕССА: oleg_pivovarov.exe</p>
+        <p>ТЕКУЩАЯ ЛОКАЦИЯ: СИЗО №3</p>
+        <br>
+        <p>ОБОРУДОВАНИЕ КОНФИСКОВАНО В ПОДОЛЬСКЕ.</p>
+        <p>ДАННЫЕ ПЕРЕДАНЫ В КУРЧАТОВСКУЮ ШКОЛУ ДЛЯ ХАРАКТЕРИСТИКИ.</p>
+        <br>
+        <p>> Нажмите F5 (Обновить страницу) для перезапуска...</p>
+    </div>
+
+    <script>
+        // --- SAFE JS EXECUTION WRAPPER ---
+        try {
+            // --- OS LOGIC & DRAGGING ---
+            let highestZ = 100;
+            window.openWindow = function(id) {
+                let el = document.getElementById(id);
+                if(el) {
+                    el.style.display = 'flex';
+                    el.style.zIndex = ++highestZ;
+                }
+            };
+            window.closeWindow = function(id) { 
+                let el = document.getElementById(id);
+                if(el) el.style.display = 'none'; 
+            };
+            
+            document.querySelectorAll('.window').forEach(win => {
+                win.addEventListener('mousedown', () => win.style.zIndex = ++highestZ);
+                win.addEventListener('touchstart', () => win.style.zIndex = ++highestZ, {passive: true});
+                dragElement(win);
+            });
+
+            function dragElement(elmnt) {
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                let header = elmnt.querySelector('.window-header');
+                if(header) {
+                    header.onmousedown = dragMouseDown;
+                    header.ontouchstart = dragTouchStart;
+                }
+
+                function dragMouseDown(e) {
+                    e = e || window.event;
+                    e.preventDefault(); 
+                    pos3 = e.clientX; pos4 = e.clientY; 
+                    document.onmouseup = closeDragElement; 
+                    document.onmousemove = elementDrag; 
+                }
+                function dragTouchStart(e) {
+                    e = e || window.event;
+                    // touchstart без preventDefault чтобы кнопки внутри нажимались
+                    pos3 = e.touches[0].clientX; pos4 = e.touches[0].clientY; 
+                    document.ontouchend = closeDragElement; 
+                    document.ontouchmove = elementTouchDrag; 
+                }
+
+                function elementDrag(e) { 
+                    e = e || window.event; e.preventDefault(); 
+                    pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; 
+                    pos3 = e.clientX; pos4 = e.clientY; 
+                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; elmnt.style.left = (elmnt.offsetLeft - pos1) + "px"; 
+                }
+                function elementTouchDrag(e) { 
+                    e = e || window.event;
+                    pos1 = pos3 - e.touches[0].clientX; pos2 = pos4 - e.touches[0].clientY; 
+                    pos3 = e.touches[0].clientX; pos4 = e.touches[0].clientY; 
+                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; elmnt.style.left = (elmnt.offsetLeft - pos1) + "px"; 
+                }
+                
+                function closeDragElement() { 
+                    document.onmouseup = null; document.onmousemove = null; 
+                    document.ontouchend = null; document.ontouchmove = null; 
+                }
+            }
+
+            setInterval(() => { 
+                let clk = document.getElementById('clock');
+                if(clk) clk.innerText = new Date().toLocaleTimeString(); 
+            }, 1000);
+
+            // --- TG SYSTEM ---
+            const tgBody = document.getElementById('tg-body');
+            window.sendTG = function(sender, text) {
+                if(tgBody) {
+                    tgBody.innerHTML += `<div class="tg-msg"><b>${sender}:</b> ${text}</div>`;
+                    tgBody.scrollTop = tgBody.scrollHeight;
+                }
+                try {
+                    let audio = new Audio('data:audio/wav;base64,UklGRlIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTEAAAAA/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8='); 
+                    let p = audio.play();
+                    if(p !== undefined) p.catch(e => {});
+                } catch(e) {}
+            };
+
+            // --- CLICKER LOGIC ---
+            let bal = 0, inc = 0, risk = 0;
+            let upgrades = [
+                { id: 'drop', name: 'Купить дропа', cost: 100, inc: 5, risk: 2 },
+                { id: 'base', name: 'Аренда подвала', cost: 1500, inc: 50, risk: 10 },
+                { id: 'sim', name: 'SIM-Box 128', cost: 10000, inc: 500, risk: 25 },
+                { id: 'bribe', name: 'Взятка (-30% Риск)', cost: 5000, inc: 0, risk: -30 }
+            ];
+
+            window.clickESIM = function() { 
+                bal += 10; updateUI(); 
+                if(bal === 10) sendTG("Братва", "Олег, схема рабочая. Газуй!"); 
+            };
+
+            window.buyUpg = function(idx) {
+                let u = upgrades[idx];
+                let btn = document.getElementById('btn-'+idx);
+                if (bal >= u.cost) {
+                    bal -= u.cost; inc += u.inc; risk += u.risk;
+                    if(risk < 0) risk = 0;
+                    if(u.id !== 'bribe') u.cost = Math.floor(u.cost * 1.5);
+                    else u.cost = Math.floor(u.cost * 1.2);
+                    
+                    if(u.id === 'base' && bal < 2000) sendTG("Барыга", "Ключи от подвала оставил под кирпичом.");
+                    if(u.id === 'sim' && bal < 12000) sendTG("Поставщик", "Китайцы выслали боксы. Осторожно, трафик палится.");
+                    
+                    updateUI(); renderShop();
+                } else {
+                    // Визуальный отказ (красный цвет кнопки)
+                    if(btn) {
+                        let oldColor = btn.style.backgroundColor;
+                        btn.style.backgroundColor = '#a00';
+                        setTimeout(() => btn.style.backgroundColor = oldColor, 200);
+                    }
+                }
+            };
+
+            function updateUI() {
+                document.getElementById('c-bal').innerText = Math.floor(bal) + " ₽";
+                document.getElementById('c-inc').innerText = inc + " ₽/с";
+                
+                let r = Math.min(100, risk);
+                document.getElementById('c-risk-bar').style.width = r + "%";
+                
+                let rt = document.getElementById('c-risk-text');
+                if(r < 40) rt.innerText = r + "% - СПОКОЙНО";
+                else if (r < 80) rt.innerText = r + "% - ИЩУТ СЕРВЕРА";
+                else rt.innerText = r + "% - ОМОН В ПУТИ!";
+
+                // Подсветка кнопок
+                upgrades.forEach((u, i) => {
+                    let btn = document.getElementById('btn-'+i);
+                    if(btn) {
+                        if(bal < u.cost) {
+                            btn.style.opacity = '0.5';
+                            btn.style.borderColor = '#555';
+                        } else {
+                            btn.style.opacity = '1';
+                            btn.style.borderColor = '#0f0';
+                        }
+                    }
+                });
+                
+                if(risk >= 100) {
+                    sendTG("Аноним", "ОЛЕГ, БУХАНКА У ПОДЪЕЗДА! СЛИВАЙ БАЗУ!");
+                    setTimeout(() => triggerBSOD("RISK_100_PERCENT (ОБЛАВА В ПОДОЛЬСКЕ)"), 2000);
+                }
+            }
+
+            function renderShop() {
+                let html = "";
+                upgrades.forEach((u, i) => {
+                    html += `<div class="shop-item">
+                        <div style="text-align:left;"><b>${u.name}</b><br><small>Доход: +${u.inc} | Риск: ${u.risk>0?'+'+u.risk:u.risk}%</small></div>
+                        <button class="shop-btn" id="btn-${i}" onclick="buyUpg(${i})">${u.cost} ₽</button>
+                    </div>`;
+                });
+                document.getElementById('c-shop').innerHTML = html;
+                updateUI();
+            }
+
+            setInterval(() => { if(inc > 0) { bal += inc; if(Math.random()>0.7) risk += 0.5; updateUI(); } }, 1000);
+            renderShop();
+
+            // --- AUDIO ARCHIVE ---
+            window.playAudio = function() {
+                document.getElementById('audio-sub').style.display = 'block';
+                try {
+                    let msg = new SpeechSynthesisUtterance("Абонент Олег Пивоваров вне зоны действия сети. Переадресация в камеру СИЗО номер три.");
+                    msg.lang = 'ru-RU'; msg.rate = 0.9; msg.pitch = 0.5;
+                    window.speechSynthesis.speak(msg);
+                } catch(e) {}
+            };
+
+            // --- FSIN SHOP ---
+            window.buyFsin = function(price, btn) {
+                if(bal >= price) { 
+                    bal -= price; 
+                    btn.innerText = "КУПЛЕНО!";
+                    btn.style.backgroundColor = "#0a0";
+                    setTimeout(() => { btn.innerText = "Купить"; btn.style.backgroundColor = "#222"; }, 1500);
+                    updateUI(); renderShop(); 
+                }
+                else { 
+                    btn.style.backgroundColor = '#a00';
+                    btn.innerText = "НЕТ ДЕНЕГ";
+                    setTimeout(() => { btn.innerText = "Купить"; btn.style.backgroundColor = "#222"; }, 1000);
+                }
+            };
+
+            // --- BSOD ---
+            window.triggerBSOD = function(reason) {
+                document.getElementById('bsod-reason').innerText = "КРИТИЧЕСКАЯ ОШИБКА: " + reason;
+                document.getElementById('bsod').style.display = 'flex';
+            };
+
+            setTimeout(() => sendTG("Система", "Обнаружено подключение из г. Подольск"), 3000);
+
+        } catch (globalError) {
+            console.error(globalError);
+        }
+    </script>
+</body>
+</html>
