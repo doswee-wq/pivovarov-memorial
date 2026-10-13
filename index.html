@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OlegOS ULTIMATE - Empire Edition</title>
+    <style>
+        :root {
+            --bg: #050510;
+            --primary: #0f0;
+            --secondary: #0ff;
+            --danger: #f00;
+            --warn: #ff0;
+            --window-bg: rgba(0, 15, 0, 0.95);
+            --window-border: #0f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', monospace; user-select: none; }
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 60%),
+                linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            color: var(--primary);
+            height: 100vh; overflow: hidden; position: relative;
+        }
+
+        /* CRT Effect */
+        .crt-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px; z-index: 9999; pointer-events: none; opacity: 0.4;
+        }
+
+        /* Desktop & Icons */
+        .desktop { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, 100px); gap: 20px; z-index: 10; position: relative; }
+        .icon { 
+            background: transparent; border: none; outline: none; 
+            display: flex; flex-direction: column; align-items: center; 
+            cursor: pointer; text-align: center; transition: 0.1s; 
+            color: var(--primary); font-family: inherit; z-index: 20;
+        }
+        .icon:hover { background: rgba(0, 255, 0, 0.1); border-radius: 10px; }
+        .icon:active { transform: scale(0.9); }
+        .icon-emoji { font-size: 3.5rem; filter: drop-shadow(0 0 5px var(--primary)); pointer-events: none; }
+        .icon-text { font-size: 0.8rem; background: rgba(0,0,0,0.8); padding: 4px 6px; margin-top: 5px; border: 1px solid var(--primary); pointer-events: none; font-weight: bold; text-shadow: 1px 1px 0 #000;}
+
+        /* Windows */
+        .window {
+            position: absolute; top: 5%; left: 5%; width: 600px; max-width: 95vw;
+            background: var(--window-bg); border: 2px solid var(--window-border);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            display: none; flex-direction: column; z-index: 50; overflow: hidden;
+        }
+        /* Увеличенное окно для Империи */
+        #app-tycoon { width: 900px; top: 2%; left: 2%; }
+        
+        .window-header {
+            background: var(--primary); color: #000; padding: 8px 10px;
+            display: flex; justify-content: space-between; font-weight: bold; cursor: move; align-items: center;
+        }
+        .close-btn { 
+            background: #000; color: var(--primary); border: 1px solid var(--primary); 
+            padding: 2px 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .close-btn:active { background: var(--danger); color: #fff; border-color: var(--danger); }
+        .window-content { padding: 15px; height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; position: relative; }
+        #app-tycoon .window-content { height: 600px; padding: 10px; }
+
+        /* Telegram Widget */
+        .tg-widget {
+            position: fixed; bottom: 50px; right: 20px; width: 300px; max-width: 90vw;
+            background: rgba(0, 20, 30, 0.95); border: 1px solid var(--secondary);
+            z-index: 100; box-shadow: 0 0 15px var(--secondary); display: flex; flex-direction: column;
+        }
+        .tg-header { background: var(--secondary); color: #000; padding: 5px; font-weight: bold; }
+        .tg-body { height: 200px; overflow-y: auto; padding: 10px; font-size: 0.8rem; color: var(--secondary); display: flex; flex-direction: column; gap: 10px; }
+        .tg-msg { background: rgba(0, 255, 255, 0.1); padding: 8px; border-left: 2px solid var(--secondary); animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* Taskbar */
+        .taskbar {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 40px;
+            background: #000; border-top: 1px solid var(--primary);
+            display: flex; align-items: center; padding: 0 10px; z-index: 1000;
+        }
+        .start-btn { background: var(--primary); color: #000; padding: 5px 15px; font-weight: bold; border: none; cursor: pointer; }
+        .start-btn:active { transform: scale(0.95); }
+        .clock { margin-left: auto; color: var(--primary); }
+
+        /* --- TYCOON SPLIT VIEW --- */
+        .tycoon-layout { display: flex; height: 100%; gap: 10px; }
+        .tycoon-left { width: 280px; display: flex; flex-direction: column; gap: 10px; border-right: 2px dashed var(--primary); padding-right: 10px; overflow-y: auto; }
+        .tycoon-right { flex-grow: 1; display: flex; flex-direction: column; background: rgba(0,255,0,0.03); border: 1px solid #222; padding: 10px; overflow-y: auto; position: relative; }
+
+        .stat-box { border: 1px dashed var(--primary); padding: 10px; background: rgba(0,255,0,0.05); text-align: center; }
+        .stat-box.warn-box { border-color: var(--secondary); background: rgba(0,255,255,0.05); color: var(--secondary); }
+        .val { font-size: 1.4rem; font-weight: bold; margin-top: 5px; }
+
+        .btn-main { background: #000; color: var(--primary); border: 2px solid var(--primary); padding: 12px; font-size: 1rem; cursor: pointer; text-transform: uppercase; transition: 0.1s; font-weight: bold; width: 100%; text-align: center;}
+        .btn-main:active { transform: scale(0.98); background: var(--primary); color: #000; }
+        .btn-main:disabled { opacity: 0.3; border-color: #555; pointer-events: none; }
+        
+        .btn-nav { background: #111; color: #fff; border: 1px solid var(--primary); padding: 10px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.1s;}
+        .btn-nav:hover { background: rgba(0,255,0,0.2); }
+        .btn-nav:active { background: var(--primary); color: #000; }
+
+        .risk-bar-bg { width: 100%; height: 20px; border: 1px solid var(--danger); position: relative; background: #000; }
+        .risk-bar { width: 0%; height: 100%; background: var(--danger); transition: 0.3s; }
+        .risk-text { position: absolute; top: 0; left: 0; width: 100%; text-align: center; color: #fff; font-size: 0.8rem; line-height: 20px; text-shadow: 1px 1px #000; font-weight: bold; }
+
+        /* Карточки квартир / маркета */
+        .apt-card { border: 1px solid #333; padding: 15px; cursor: pointer; transition: 0.2s; background: rgba(0,0,0,0.6); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .apt-card:hover { border-color: var(--primary); background: rgba(0,255,0,0.1); transform: translateX(5px); }
+        .status-badge { padding: 3px 8px; font-size: 0.8rem; font-weight: bold; border-radius: 3px; }
+        .st-ok { background: var(--primary); color: #000; }
+        .st-warn { background: var(--warn); color: #000; }
+        .st-err { background: var(--danger); color: #fff; }
+
+        /* Внутри квартиры (SIM BOX) */
+        .apt-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px dashed var(--primary); padding-bottom: 10px; margin-bottom: 15px; }
+        .temp-indicator { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; margin-top: 5px; }
+        .temp-bar-bg { width: 100px; height: 10px; border: 1px solid #555; background: #000; }
+        .temp-bar { height: 100%; width: 0%; transition: 0.3s; }
+        
+        .box-container { border: 1px solid #444; background: #0a0a0a; padding: 15px; position: relative; border-radius: 3px; margin-bottom: 15px; }
+        .box-title { position: absolute; top: -10px; left: 10px; background: var(--window-bg); padding: 0 5px; font-size: 0.8rem; color: #aaa; border: 1px solid #444; }
+        .sim-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 5px; }
+        
+        .sim-slot { 
+            aspect-ratio: 1; border: 1px solid #333; background: #000; 
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            position: relative; transition: 0.1s;
+        }
+        .sim-slot:hover { border-color: var(--secondary); }
+        .sim-slot:active { transform: scale(0.9); }
+        
+        .led { width: 50%; height: 50%; border-radius: 50%; pointer-events: none; transition: 0.2s;}
+        .led.green { background: var(--primary); box-shadow: 0 0 8px var(--primary); animation: pulse 2s infinite alternate; }
+        .led.red { background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: blink 0.5s infinite; }
+        .led.empty { background: #222; }
+
+        @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.1; } }
+
+        /* Остальные приложения (Архив, Маркет ФСИН, Матрица) - стили из предыдущей версии */
+        .redacted { background: var(--primary); color: var(--primary); transition: 0.3s; cursor: pointer; padding: 0 5px; }
+        .redacted:hover, .redacted:active { background: transparent; color: #fff; }
+        .detective-board { border: 1px dashed var(--danger); padding: 15px; text-align: center; margin: 15px 0; background: rgba(255,0,0,0.05); }
+        .play-audio { background: transparent; border: 1px solid var(--secondary); color: var(--secondary); padding: 15px; cursor: pointer; width: 100%; font-size: 1rem; font-weight: bold; transition: 0.1s;}
+        .play-audio:active { background: var(--secondary); color: #000; transform: scale(0.98); }
+        .fsin-item { border: 1px dotted var(--primary); padding: 15px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; background: rgba(0,255,0,0.05); }
+        .fsin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .cube-container { perspective: 800px; width: 150px; height: 150px; margin: 50px auto; }
+        .cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; animation: rotateCube 10s infinite linear; }
+        .face { position: absolute; width: 150px; height: 150px; background: rgba(0, 255, 0, 0.1); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: inset 0 0 20px var(--primary); opacity: 0.8; }
+        .front  { transform: translateZ(75px); } .back { transform: rotateY(180deg) translateZ(75px); } .right { transform: rotateY(90deg) translateZ(75px); } .left { transform: rotateY(-90deg) translateZ(75px); } .top { transform: rotateX(90deg) translateZ(75px); } .bottom { transform: rotateX(-90deg) translateZ(75px); }
+        @keyframes rotateCube { from { transform: rotateX(0) rotateY(0); } to { transform: rotateX(360deg) rotateY(360deg); } }
+
+        /* BSOD */
+        .bsod { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0000aa; color: #fff; z-index: 10000; flex-direction: column; justify-content: center; align-items: center; font-family: 'Consolas', monospace; text-align: center; padding: 20px; }
+        .bsod h1 { font-size: 3rem; background: #fff; color: #0000aa; padding: 10px 20px; margin-bottom: 20px; }
+
+        @media (max-width: 768px) {
+            .window { width: 100% !important; left: 0 !important; top: 0 !important; height: calc(100vh - 40px) !important; border: none; }
+            .window-content { padding-bottom: 100px; }
+            #app-tycoon .window-content { height: 100%; }
+            .tycoon-layout { flex-direction: column; }
+            .tycoon-left { width: 100%; border-right: none; border-bottom: 2px dashed var(--primary); padding-right: 0; padding-bottom: 10px; flex-shrink: 0; height: 350px; }
+            .tg-widget { display: none; }
+            .fsin-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body ontouchstart="">
+    <div class="crt-overlay"></div>
+
+    <!-- DESKTOP ICONS -->
+    <div class="desktop">
+        <button class="icon" onclick="openWindow('app-tycoon')">
+            <div class="icon-emoji">🏢</div>
+            <div class="icon-text">Empire.exe</div>
+        </button>
+        <button class="icon" onclick="openWindow('app-archive')">
+            <div class="icon-emoji">🗄️</div>
+            <div class="icon-text">DELO.pdf</div>
+        </button>
+        <button class="icon" onclick="openWindow('app-market')">
+            <div class="icon-emoji">🛍️</div>
+            <div class="icon-text">FSIN_Shop</div>
+        </button>
+        <button class="icon" onclick="openWindow('app-matrix')">
+            <div class="icon-emoji">🌐</div>
+            <div class="icon-text">Matrix3D</div>
+        </button>
+        <button class="icon" onclick="triggerBSOD('USER_INITIATED_WIPE')">
+            <div class="icon-emoji">🧨</div>
+            <div class="icon-text">WIPE_LOGS</div>
+        </button>
+    </div>
+
+    <!-- APP 1: TYCOON MANAGER (EMPIRE) -->
+    <div id="app-tycoon" class="window">
+        <div class="window-header">
+            <span>[root@empire] SIM-Box Tycoon v5.0 PRO</span>
+            <button class="close-btn" onclick="closeWindow('app-tycoon')">X</button>
+        </div>
+        <div class="window-content">
+            <div class="tycoon-layout">
+                <!-- ЛЕВАЯ ПАНЕЛЬ: СТАТИСТИКА И ДЕЙСТВИЯ -->
+                <div class="tycoon-left">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div class="stat-box">БАЛАНС<br><div class="val" id="t-bal">0 ₽</div></div>
+                        <div class="stat-box">ДОХОД<br><div class="val" id="t-inc">0 ₽/с</div></div>
+                    </div>
+                    
+                    <div class="stat-box warn-box" style="padding: 5px;">
+                        СКЛАД SIM-КАРТ (МТС)<br><div class="val" id="t-sims" style="margin-top:0;">0 шт</div>
+                    </div>
+
+                    <div style="color:var(--danger); font-weight:bold; font-size:0.9rem; text-align:center;">ВНИМАНИЕ ОПЕРГРУППЫ:</div>
+                    <div class="risk-bar-bg">
+                        <div class="risk-bar" id="t-risk-bar"></div>
+                        <div class="risk-text" id="t-risk-text">0% - СПОКОЙНО</div>
+                    </div>
+
+                    <button class="btn-main" onclick="clickESIM()">[+] Ручная рег. eSIM (+50 ₽)</button>
+                    <button class="btn-main" id="btn-buy-sims" onclick="buySims(this)" style="font-size:0.9rem; border-color:var(--secondary); color:var(--secondary);">📦 Коробка SIM (100шт)<br>Цена: 1000 ₽</button>
+                    <button class="btn-main" id="btn-bribe" onclick="buyBribe(this)" style="font-size:0.9rem; border-color:var(--danger); color:var(--danger);">💸 Дать Взятку (-30% Риск)<br>Цена: <span id="bribe-price">5000</span> ₽</button>
+                    
+                    <hr style="border-color:#333; margin:5px 0;">
+                    
+                    <button class="btn-nav" onclick="navView('map')">🌍 Карта Империи</button>
+                    <button class="btn-nav" onclick="navView('market')">🛒 Рынок Недвижки</button>
+                </div>
+                
+                <!-- ПРАВАЯ ПАНЕЛЬ: ДИНАМИЧЕСКИЙ ВИД -->
+                <div class="tycoon-right" id="t-view-container">
+                    <!-- Заполняется через JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP 2: SECRET ARCHIVE -->
+    <div id="app-archive" class="window">
+        <div class="window-header">
+            <span>ДЕЛО №2010-ОП</span>
+            <button class="close-btn" onclick="closeWindow('app-archive')">X</button>
+        </div>
+        <div class="window-content">
+            <h2 style="color:var(--danger); text-align:center;">УГОЛОВНОЕ ДЕЛО: ПИВОВАРОВ О.</h2>
+            <p>Фигурант: Олег Пивоваров. Год рождения: <span class="redacted">2010</span>.</p>
+            <p>Образование: <span class="redacted">Курчатовская школа</span> (выпускник).</p>
+            <p>Сводка: Организовал распределенную сеть <span class="redacted">SIM-боксов</span> в квартирах Московской области. Оборудование регулярно перегревалось, фиксировались аномальные скачки трафика.</p>
+            
+            <div class="detective-board">
+                <p>📍 Курчатовская школа <br>⬇<br> 📍 <span class="redacted">Подольск (Подвал)</span> <br>⬇<br> 📍 СИЗО №3</p>
+            </div>
+            <button class="play-audio" onclick="playAudio()">[▶] ПРОСЛУШАТЬ ПЕРЕХВАТ ЗВОНКА</button>
+            <p id="audio-sub" style="display:none; color:var(--secondary); font-style:italic; padding: 10px; border: 1px solid var(--secondary);">> "Абонент Олег Пивоваров вне зоны действия сети. Переадресация в камеру СИЗО номер три."</p>
+        </div>
+    </div>
+
+    <!-- APP 3: FSIN MARKET -->
+    <div id="app-market" class="window">
+        <div class="window-header">
+            <span>FSIN-MARKET (Darknet)</span>
+            <button class="close-btn" onclick="closeWindow('app-market')">X</button>
+        </div>
+        <div class="window-content">
+            <h3 style="text-align:center; color:#f0f;">ПОДГОНЫ В СИЗО №3</h3>
+            <p style="text-align:center; font-size:0.8rem; color:#888;">(Оплата списывается с баланса Империи)</p>
+            <div class="fsin-grid">
+                <div class="fsin-item"><span style="font-size:2rem">☕</span><span>Чифирь Энергетик<br><b>250 ₽</b></span><button class="btn-main" style="padding:8px" onclick="buyFsin(250, this)">Купить</button></div>
+                <div class="fsin-item"><span style="font-size:2rem">🥖</span><span>Ножовка в батоне<br><b>15,000 ₽</b></span><button class="btn-main" style="padding:8px" onclick="buyFsin(15000, this)">Купить</button></div>
+                <div class="fsin-item"><span style="font-size:2rem">📱</span><span>Телефон в тапке<br><b>50,000 ₽</b></span><button class="btn-main" style="padding:8px" onclick="buyFsin(50000, this)">Купить</button></div>
+                <div class="fsin-item"><span style="font-size:2rem">📜</span><span>УДО от Директора<br><b>9,999,999 ₽</b></span><button class="btn-main" style="padding:8px" onclick="buyFsin(9999999, this)">Купить</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP 4: 3D MATRIX -->
+    <div id="app-matrix" class="window">
+        <div class="window-header">
+            <span>SIM-BOX 3D</span>
+            <button class="close-btn" onclick="closeWindow('app-matrix')">X</button>
+        </div>
+        <div class="window-content" style="overflow: hidden; display: flex; justify-content: center; align-items: center;">
+            <div class="cube-container">
+                <div class="cube">
+                    <div class="face front">SIM_01</div><div class="face back">SIM_02</div><div class="face right">TRAFFIC</div>
+                    <div class="face left">ENCRYPT</div><div class="face top">PROXY</div><div class="face bottom">ROOT</div>
+                </div>
+            </div>
+            <div style="position:absolute; bottom:20px; width:100%; text-align:center; font-weight:bold;">ВИЗУАЛИЗАЦИЯ ТРАФИКА АКТИВНА</div>
+        </div>
+    </div>
+
+    <!-- TELEGRAM OVERLAY -->
+    <div class="tg-widget">
+        <div class="tg-header">💬 TG: Секретный Чат</div>
+        <div class="tg-body" id="tg-body">
+            <div class="tg-msg"><b>Система:</b> Шифрование активно.</div>
+        </div>
+    </div>
+
+    <!-- TASKBAR -->
+    <div class="taskbar">
+        <button class="start-btn">OlegOS Start</button>
+        <div class="clock" id="clock">00:00</div>
+    </div>
+
+    <!-- BSOD -->
+    <div id="bsod" class="bsod">
+        <h1>СИСТЕМА ЗАБЛОКИРОВАНА</h1>
+        <p id="bsod-reason" style="font-size: 1.2rem; color: #f0f;">КРИТИЧЕСКАЯ ОШИБКА: 0x000FSIN</p>
+        <br>
+        <p>ИМЯ ПРОЦЕССА: oleg_pivovarov.exe</p>
+        <p>ТЕКУЩАЯ ЛОКАЦИЯ: СИЗО №3</p>
+        <br>
+        <p>ОБОРУДОВАНИЕ КОНФИСКОВАНО В ПОДОЛЬСКЕ.</p>
+        <p>ДАННЫЕ ПЕРЕДАНЫ В КУРЧАТОВСКУЮ ШКОЛУ ДЛЯ ХАРАКТЕРИСТИКИ.</p>
+        <br>
+        <p>> Нажмите F5 (Обновить страницу) для перезапуска...</p>
+    </div>
+
+    <script>
+        try {
+            // --- OS WINDOW LOGIC ---
+            let highestZ = 100;
+            window.openWindow = function(id) { let el = document.getElementById(id); if(el) { el.style.display = 'flex'; el.style.zIndex = ++highestZ; } };
+            window.closeWindow = function(id) { let el = document.getElementById(id); if(el) el.style.display = 'none'; };
+            
+            document.querySelectorAll('.window').forEach(win => {
+                win.addEventListener('mousedown', () => win.style.zIndex = ++highestZ);
+                win.addEventListener('touchstart', () => win.style.zIndex = ++highestZ, {passive: true});
+                dragElement(win);
+            });
+
+            function dragElement(elmnt) {
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                let header = elmnt.querySelector('.window-header');
+                if(header) { header.onmousedown = dragMouseDown; header.ontouchstart = dragTouchStart; }
+
+                function dragMouseDown(e) { e = e || window.event; e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY; document.onmouseup = closeDragElement; document.onmousemove = elementDrag; }
+                function dragTouchStart(e) { e = e || window.event; pos3 = e.touches[0].clientX; pos4 = e.touches[0].clientY; document.ontouchend = closeDragElement; document.ontouchmove = elementTouchDrag; }
+
+                function elementDrag(e) { e = e || window.event; e.preventDefault(); pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY; elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; elmnt.style.left = (elmnt.offsetLeft - pos1) + "px"; }
+                function elementTouchDrag(e) { e = e || window.event; pos1 = pos3 - e.touches[0].clientX; pos2 = pos4 - e.touches[0].clientY; pos3 = e.touches[0].clientX; pos4 = e.touches[0].clientY; elmnt.style.top = (elmnt.offsetTop - pos2) + "px"; elmnt.style.left = (elmnt.offsetLeft - pos1) + "px"; }
+                function closeDragElement() { document.onmouseup = null; document.onmousemove = null; document.ontouchend = null; document.ontouchmove = null; }
+            }
+
+            setInterval(() => { let clk = document.getElementById('clock'); if(clk) clk.innerText = new Date().toLocaleTimeString(); }, 1000);
+
+            // --- TELEGRAM ---
+            const tgBody = document.getElementById('tg-body');
+            window.sendTG = function(sender, text) {
+                if(tgBody) { tgBody.innerHTML += `<div class="tg-msg"><b>${sender}:</b> ${text}</div>`; tgBody.scrollTop = tgBody.scrollHeight; }
+                try { let audio = new Audio('data:audio/wav;base64,UklGRlIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTEAAAAA/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8A/wD/AP8='); let p = audio.play(); if(p) p.catch(e=>{}); } catch(e){}
+            };
+
+            // --- TYCOON LOGIC ---
+            let game = {
+                bal: 0, inc: 0, risk: 0, sims: 0, view: 'map', activeApt: null,
+                bribeCost: 5000, boxCost: 5000,
+                apts: [
+                    { id: 0, name: "Подвал (Подольск)", slots: 3, temp: 25, ac: false, boxes: [] }
+                ],
+                market: [
+                    { id: 1, name: "Однушка (Серпухов)", price: 50000, slots: 5 },
+                    { id: 2, name: "Гараж (Бутово)", price: 120000, slots: 8 },
+                    { id: 3, name: "Склад (Чехов)", price: 500000, slots: 20 }
+                ]
+            };
+
+            const vCont = document.getElementById('t-view-container');
+
+            window.clickESIM = function() {
+                game.bal += 50; updateSideUI();
+                if(game.bal === 50) sendTG("Неизвестный", "Схема рабочая. Накопи на SIM-бокс и автоматизируй это дело.");
+            };
+
+            function visualFail(btn) {
+                let old = btn.style.backgroundColor; btn.style.backgroundColor = '#a00';
+                setTimeout(() => btn.style.backgroundColor = old, 200);
+            }
+
+            window.buySims = function(btn) {
+                if(game.bal >= 1000) { game.bal -= 1000; game.sims += 100; updateSideUI(); if(game.view === 'apt') renderApt(game.activeApt); }
+                else visualFail(btn);
+            };
+
+            window.buyBribe = function(btn) {
+                if(game.bal >= game.bribeCost) {
+                    game.bal -= game.bribeCost; game.risk = Math.max(0, game.risk - 30);
+                    game.bribeCost = Math.floor(game.bribeCost * 1.5);
+                    document.getElementById('bribe-price').innerText = game.bribeCost;
+                    sendTG("Решала", "Передал кому надо. Майора успокоили, но он просит больше.");
+                    updateSideUI();
+                } else visualFail(btn);
+            };
+
+            // NAVIGATION
+            window.navView = function(viewStr) {
+                game.view = viewStr;
+                if(viewStr === 'map') renderMap();
+                else if(viewStr === 'market') renderMarket();
+            };
+            window.openApt = function(id) { game.view = 'apt'; game.activeApt = id; renderApt(id); };
+
+            // RENDERS
+            function renderMap() {
+                let h = `<h2>🌍 КАРТА ИМПЕРИИ</h2><p style="font-size:0.9rem; color:#888; margin-bottom:15px;">Управление вашими точками.</p>`;
+                game.apts.forEach(a => {
+                    let sOk = 0, sErr = 0;
+                    a.boxes.forEach(b => b.states.forEach(s => { if(s===1) sOk++; else if(s===0) sErr++; }));
+                    let stHtml = a.temp >= 80 ? `<span class="status-badge st-err">ПЕРЕГРЕВ</span>` : 
+                                 sErr > 5 ? `<span class="status-badge st-warn">ЗАМЕНИТЕ SIM</span>` : `<span class="status-badge st-ok">СТАБИЛЬНО</span>`;
+                    h += `<div class="apt-card" onclick="openApt(${a.id})">
+                        <div>
+                            <div style="font-size:1.1rem; font-weight:bold; color:var(--primary)">${a.name}</div>
+                            <div style="font-size:0.8rem; color:#aaa; margin-top:5px;">Боксы: ${a.boxes.length}/${a.slots} | SIM: <span style="color:#0f0">${sOk}</span> | Сгорели: <span style="color:#f00">${sErr}</span> | ${Math.floor(a.temp)}°C</div>
+                        </div>
+                        <div>${stHtml}</div>
+                    </div>`;
+                });
+                vCont.innerHTML = h;
+            }
+
+            function renderMarket() {
+                let h = `<h2>🛒 РЫНОК НЕДВИЖИМОСТИ</h2><p style="font-size:0.9rem; color:#888; margin-bottom:15px;">Купите больше квартир для масштабирования.</p>`;
+                game.market.forEach(m => {
+                    h += `<div class="apt-card" style="cursor:default;">
+                        <div><div style="font-size:1.1rem; font-weight:bold; color:var(--secondary)">${m.name}</div><div style="font-size:0.8rem; color:#aaa;">Вместимость: ${m.slots} боксов</div></div>
+                        <button class="btn-main" style="width:auto; padding:8px 15px;" onclick="buyApt(${m.id}, this)">Купить (${m.price} ₽)</button>
+                    </div>`;
+                });
+                if(game.market.length===0) h += `<p>Вы скупили всю недвижку!</p>`;
+                vCont.innerHTML = h;
+            }
+
+            function renderApt(id) {
+                if(game.view !== 'apt' || game.activeApt !== id) return;
+                let a = game.apts.find(x => x.id === id);
+                let tColor = a.temp < 50 ? '#0f0' : (a.temp < 80 ? '#ff0' : '#f00');
+                
+                let h = `<div class="apt-header">
+                    <div>
+                        <h2 style="margin:0; color:var(--primary)">📍 ${a.name}</h2>
+                        <div class="temp-indicator">Температура: <span style="color:${tColor};font-weight:bold;">${Math.floor(a.temp)}°C</span>
+                            <div class="temp-bar-bg"><div class="temp-bar" style="width:${Math.min(100, a.temp)}%; background:${tColor};"></div></div>
+                            ${a.ac ? '<span style="color:var(--secondary); font-weight:bold;">[AC ON]</span>' : ''}
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
+                        <button class="btn-main" style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="buyBox(${id}, this)" ${a.boxes.length>=a.slots?'disabled':''}>+ SIM-Бокс (5000 ₽)</button>
+                        ${!a.ac ? `<button class="btn-main" style="width:auto; padding:5px 10px; font-size:0.8rem; border-color:var(--secondary); color:var(--secondary)" onclick="buyAC(${id}, this)">❄️ Кондиционер (15000 ₽)</button>` : ''}
+                    </div>
+                </div>
+                <button class="btn-main" style="margin-bottom:15px; border-color:var(--warn); color:var(--warn);" onclick="repairAll(${id}, this)">🔄 ОБСЛУЖИВАНИЕ: Заменить все красные/пустые SIM (Требуется склад)</button>
+                <div style="display:flex; flex-wrap:wrap; gap:15px;">`;
+
+                a.boxes.forEach((b, bI) => {
+                    h += `<div class="box-container"><div class="box-title">SIM-BOX #${bI+1}</div><div class="sim-grid">`;
+                    b.states.forEach((s, sI) => {
+                        let c = s === 1 ? 'green' : (s === 0 ? 'red' : 'empty');
+                        h += `<div class="sim-slot" onclick="replaceSim(${id}, ${bI}, ${sI})"><div class="led ${c}"></div></div>`;
+                    });
+                    h += `</div></div>`;
+                });
+                if(a.boxes.length === 0) h += `<p style="color:#666;">Здесь пусто. Купите SIM-бокс.</p>`;
+                h += `</div>`;
+                vCont.innerHTML = h;
+            }
+
+            // APARTMENT ACTIONS
+            window.buyApt = function(mId, btn) {
+                let idx = game.market.findIndex(m => m.id === mId);
+                let m = game.market[idx];
+                if(game.bal >= m.price) {
+                    game.bal -= m.price;
+                    game.apts.push({ id: m.id, name: m.name, slots: m.slots, temp: 20, ac: false, boxes: [] });
+                    game.market.splice(idx, 1);
+                    sendTG("Риэлтор", `Сделка закрыта. ${m.name} ваша.`);
+                    updateSideUI(); renderMarket();
+                } else visualFail(btn);
+            };
+
+            window.buyBox = function(aId, btn) {
+                if(game.bal >= game.boxCost) {
+                    let a = game.apts.find(x => x.id === aId);
+                    if(a.boxes.length < a.slots) {
+                        game.bal -= game.boxCost;
+                        // Бокс приходит с предустановленными зелеными симками (32 шт) для быстрого старта!
+                        a.boxes.push({ states: Array(32).fill(1) });
+                        if(a.boxes.length === 1 && game.apts.length === 1) sendTG("Поставщик", "Первый бокс подключен! Трафик пошел, бабки капают.");
+                        updateSideUI(); renderApt(aId);
+                    }
+                } else visualFail(btn);
+            };
+
+            window.buyAC = function(aId, btn) {
+                if(game.bal >= 15000) {
+                    game.bal -= 15000;
+                    game.apts.find(x => x.id === aId).ac = true;
+                    updateSideUI(); renderApt(aId);
+                } else visualFail(btn);
+            };
+
+            window.replaceSim = function(aId, bI, sI) {
+                let a = game.apts.find(x => x.id === aId);
+                if(a.boxes[bI].states[sI] !== 1 && game.sims > 0) {
+                    game.sims--; a.boxes[bI].states[sI] = 1;
+                    updateSideUI(); renderApt(aId);
+                }
+            };
+
+            window.repairAll = function(aId, btn) {
+                let a = game.apts.find(x => x.id === aId);
+                let replaced = 0;
+                a.boxes.forEach(b => {
+                    b.states.forEach((s, idx) => {
+                        if(s !== 1 && game.sims > 0) { b.states[idx] = 1; game.sims--; replaced++; }
+                    });
+                });
+                if(replaced > 0) { updateSideUI(); renderApt(aId); }
+                else if (game.sims === 0) { visualFail(btn); }
+            };
+
+            // GAME LOOP
+            function updateSideUI() {
+                document.getElementById('t-bal').innerText = Math.floor(game.bal) + " ₽";
+                document.getElementById('t-sims').innerText = game.sims + " шт";
+                document.getElementById('t-inc').innerText = game.inc + " ₽/с";
+                
+                let r = Math.min(100, game.risk);
+                document.getElementById('t-risk-bar').style.width = r + "%";
+                let rt = document.getElementById('t-risk-text');
+                if(r < 40) rt.innerText = Math.floor(r) + "% - СПОКОЙНО";
+                else if (r < 80) rt.innerText = Math.floor(r) + "% - ИЩУТ ТРАФИК";
+                else rt.innerText = Math.floor(r) + "% - ОМОН В ПУТИ!";
+
+                if(game.risk >= 100) {
+                    sendTG("Аноним", "ОЛЕГ, ОБЛАВА! СЛИВАЙ БАЗУ!");
+                    setTimeout(() => triggerBSOD("ОБНАРУЖЕНЫ МАССОВЫЕ SIM-БОКСЫ В ПОДОЛЬСКЕ"), 2000);
+                }
+            }
+
+            setInterval(() => {
+                let totalInc = 0;
+                game.apts.forEach(a => {
+                    let activeSims = 0;
+                    
+                    // Термодинамика
+                    let heat = a.boxes.length * 1.5;
+                    let cooling = a.ac ? 4.0 : 0.5;
+                    a.temp += heat - cooling;
+                    if(a.temp < 20) a.temp = 20;
+                    let overheated = a.temp >= 80;
+
+                    // Симки
+                    a.boxes.forEach(b => {
+                        b.states.forEach((s, idx) => {
+                            if(s === 1) {
+                                if(!overheated) activeSims++;
+                                // Шанс сгорания (бана) симки
+                                if(Math.random() < 0.03) { b.states[idx] = 0; }
+                            }
+                        });
+                    });
+
+                    if(!overheated) totalInc += activeSims * 5; // 5 руб/сек с каждой зеленой симки
+                });
+
+                game.inc = totalInc;
+                if(game.inc > 0) {
+                    game.bal += game.inc;
+                    if(Math.random() > 0.6) game.risk += (game.inc / 1000); // Риск растет от дохода
+                }
+                
+                updateSideUI();
+                
+                // Перерисовка текущего экрана для анимации температуры/симок (только если открыта карта или хата)
+                if(game.view === 'map') renderMap();
+                else if(game.view === 'apt') renderApt(game.activeApt);
+
+            }, 1000);
+
+            // --- EXTERNAL APPS ---
+            window.playAudio = function() {
+                document.getElementById('audio-sub').style.display = 'block';
+                try {
+                    let msg = new SpeechSynthesisUtterance("Абонент Олег Пивоваров вне зоны действия сети. Переадресация в камеру СИЗО номер три.");
+                    msg.lang = 'ru-RU'; msg.rate = 0.9; msg.pitch = 0.5;
+                    window.speechSynthesis.speak(msg);
+                } catch(e) {}
+            };
+
+            window.buyFsin = function(price, btn) {
+                if(game.bal >= price) { 
+                    game.bal -= price; 
+                    btn.innerText = "КУПЛЕНО!"; btn.style.backgroundColor = "#0a0";
+                    setTimeout(() => { btn.innerText = "Купить"; btn.style.backgroundColor = "#000"; }, 1500);
+                    updateSideUI();
+                } else visualFail(btn);
+            };
+
+            window.triggerBSOD = function(reason) {
+                document.getElementById('bsod-reason').innerText = "КРИТИЧЕСКАЯ ОШИБКА: " + reason;
+                document.getElementById('bsod').style.display = 'flex';
+            };
+
+            // Init
+            navView('map');
+            setTimeout(() => sendTG("Система", "Олег, панель SIM-Box Manager v5.0 готова. Сгенерируй первые деньги вручную, затем закупай оборудование."), 3000);
+
+        } catch (globalError) {
+            console.error(globalError);
+        }
+    </script>
+</body>
+</html>
