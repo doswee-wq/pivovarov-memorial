@@ -209,7 +209,7 @@
         <span style="color:var(--purple); font-weight:bold; font-size:0.85rem; white-space:nowrap;">🎯 ЦЕЛЬ: УДО ИЗ СИЗО №3</span>
         <div class="udo-bar-track">
             <div class="udo-bar-fill" id="udo-fill"></div>
-            <div class="udo-bar-label" id="udo-label">0 / 9,999,999 ₽ (0%)</div>
+            <div class="udo-bar-label" id="udo-label">0 / 3,000,000,000 ₽ (0%)</div>
         </div>
         <button class="btn-main" id="udo-quick-btn" style="width:auto; padding:3px 10px; font-size:0.75rem; border-color:var(--purple); color:var(--purple);" onclick="claimUDO()">ВЫКУПИТЬ УДО</button>
     </div>
@@ -361,7 +361,8 @@
                 <div class="stat-box">☕ <b>Чифирь «Турбо-Код»</b><br><small>Удваивает ручной клик eSIM</small><br><br><button class="btn-main" onclick="buyPerk('click2x', 5000, this)">Купить (5,000 ₽)</button></div>
                 <div class="stat-box">🥖 <b>Фольгированный Подвал</b><br><small>Замедляет рост розыска в 2 раза</small><br><br><button class="btn-main" onclick="buyPerk('stealth', 100000, this)">Купить (100,000 ₽)</button></div>
                 <div class="stat-box">📱 <b>Связи в МТС</b><br><small>Симки горят в 3 раза реже</small><br><br><button class="btn-main" onclick="buyPerk('longsim', 350000, this)">Купить (350,000 ₽)</button></div>
-                <div class="stat-box purple">📜 <b>УДО ОТ ДИРЕКТОРА И ФСИН</b><br><small>Полная свобода и победа!</small><br><br><button class="btn-main" style="border-color:var(--purple); color:#fff; background:var(--purple);" onclick="claimUDO()">ВЫКУПИТЬ (9,999,999 ₽)</button></div>
+                <div class="stat-box purple">📜 <b>УДО ОТ ДИРЕКТОРА И ФСИН</b><br><small>Полная свобода и победа!</small><br><br><button class="btn-main" style="border-color:var(--purple); color:#fff; background:var(--purple);" onclick="claimUDO()">ВЫКУПИТЬ (3,000,000,000 ₽)
+</button></div>
             </div>
         </div>
     </div>
@@ -376,7 +377,7 @@
             <h2 style="color:var(--danger); text-align:center;">ДОСЬЕ: ОЛЕГ ПИВОВАРОВ (2010 г.р.)</h2>
             <p>> <b>База:</b> Выпускник Курчатовской школы. Начал с регистрации eSIM на переменах.</p>
             <p>> <b>Масштабирование:</b> Развернул кластеры SIM-боксов в Подольске, Серпухове, Бутово и Чехове.</p>
-            <p>> <b>Текущая задача:</b> Заработать <b>9,999,999 ₽</b> на легендарное УДО из СИЗО №3, используя VIP-трафик, собственные сотовые вышки, криптобиржу и дронов!</p>
+            <p>> <b>Текущая задача:</b> Заработать <b>3,000,000,000 ₽</b> на легендарное УДО из СИЗО №3, используя VIP-трафик, собственные сотовые вышки, криптобиржу и дронов!</p>
             <button class="btn-main" style="border-color:var(--secondary); color:var(--secondary); margin-top:15px;" onclick="playVoice()">[▶] ВКЛЮЧИТЬ ГОЛОСОВОЙ ПЕРЕХВАТ СИЗО №3</button>
         </div>
     </div>
@@ -424,7 +425,7 @@
         <div class="victory-box">
             <h1 style="font-size:2.6rem; color:var(--primary); text-shadow:0 0 20px var(--primary); margin-bottom:15px;">🎉 УДО ОДОБРЕНО! СВОБОДА! 🎉</h1>
             <p style="font-size:1.15rem; color:#fff; line-height:1.5; margin-bottom:20px;">
-                На баланс ФСИН поступило <b>9,999,999 ₽</b>!<br>
+                На баланс ФСИН поступило <b>3,000,000,000 ₽</b>!<br>
                 Ворота СИЗО №3 открываются. У входа Олега встречает золотой Гелик, директор Курчатовской школы жмет руку, а SIM-боксы в Подольске и Серпухове продолжают майнить миллионы в полном автопилоте под управлением Нейро-Олега v2.0!
             </p>
             <div style="border:1px dashed var(--secondary); padding:15px; background:rgba(0,255,255,0.08); margin-bottom:20px; color:var(--secondary);">
@@ -481,7 +482,7 @@
         };
 
         // --- CORE GAME STATE ---
-        const UDO_GOAL = 9999999;
+        const UDO_GOAL = 3000000000;
         let game = {
             bal: 1500,
             inc: 0,
@@ -931,7 +932,7 @@
             // UDO Top Bar
             let pct = Math.min(100, (game.bal / UDO_GOAL) * 100);
             document.getElementById('udo-fill').style.width = pct + "%";
-            document.getElementById('udo-label').innerText = `${fmt(game.bal)} / 9,999,999 ₽ (${pct.toFixed(1)}%)`;
+            document.getElementById('udo-label').innerText = `${fmt(game.bal)} / 3,000,000,000 ₽ (${pct.toFixed(1)}%)`;
             let uBtn = document.getElementById('udo-quick-btn');
             if(game.bal >= UDO_GOAL) {
                 uBtn.style.background = 'var(--primary)';
