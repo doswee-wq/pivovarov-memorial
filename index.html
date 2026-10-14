@@ -158,6 +158,14 @@
         .front  { transform: translateZ(75px); } .back { transform: rotateY(180deg) translateZ(75px); } .right { transform: rotateY(90deg) translateZ(75px); } .left { transform: rotateY(-90deg) translateZ(75px); } .top { transform: rotateX(90deg) translateZ(75px); } .bottom { transform: rotateX(-90deg) translateZ(75px); }
         @keyframes rotateCube { from { transform: rotateX(0) rotateY(0); } to { transform: rotateX(360deg) rotateY(360deg); } }
 
+
+.empire-panel{border:1px solid var(--secondary);padding:10px;background:rgba(0,30,35,.45)}
+.empire-panel h3{color:var(--secondary);margin-bottom:8px;font-size:1rem}
+.mini-btn{background:#061010;color:var(--secondary);border:1px solid var(--secondary);padding:8px;cursor:pointer;width:100%;margin-top:6px;font-weight:bold}
+.progress-bg{height:12px;border:1px solid var(--secondary);background:#000;margin-top:6px}
+.progress-fill{height:100%;background:var(--secondary);width:0%;transition:width .25s}
+.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:11000;background:#001515;border:1px solid var(--secondary);color:var(--secondary);padding:10px 14px;max-width:90vw;display:none;box-shadow:0 0 18px #0ff}
+
         /* BSOD */
         .bsod { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0000aa; color: #fff; z-index: 10000; flex-direction: column; justify-content: center; align-items: center; font-family: 'Consolas', monospace; text-align: center; padding: 20px; }
         .bsod h1 { font-size: 3rem; background: #fff; color: #0000aa; padding: 10px 20px; margin-bottom: 20px; }
@@ -174,7 +182,10 @@
     </style>
 </head>
 <body ontouchstart="">
-    <div class="crt-overlay"></div>
+    <div class="crt-overlay"></div><div id="toast" class="toast"></div>
+<div id="expansion-modal" style="display:none;position:fixed;inset:4% 3%;z-index:12000;background:rgba(0,8,10,.98);border:2px solid #0ff;box-shadow:0 0 30px #0ff;color:#0f0;padding:14px;overflow:auto">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #0ff;padding-bottom:10px;margin-bottom:12px"><b id="expansion-title">EXPANSION HUB</b><button class="close-btn" onclick="closeExpansion()">ЗАКРЫТЬ ✕</button></div>
+<div id="expansion-content"></div></div>
 
     <!-- DESKTOP ICONS -->
     <div class="desktop">
@@ -233,6 +244,26 @@
                     
                     <button class="btn-nav" onclick="navView('map')">🌍 Карта Империи</button>
                     <button class="btn-nav" onclick="navView('market')">🛒 Рынок Недвижки</button>
+<div class="empire-panel"><h3>⚙️ ЛЕГАЛЬНЫЙ БИЗНЕС-КОНТУР</h3>
+<button class="mini-btn" onclick="doGig()">💻 Заказ на фрилансе (+750 ₽)</button>
+<button class="mini-btn" onclick="buyUpgrade()">📈 Улучшить менеджмент</button>
+<button class="mini-btn" onclick="buyBusiness()">☕ Открыть кофейню</button>
+<div style="font-size:.75rem;color:#aaa;margin-top:6px">Уровень менеджмента: <b id="t-level">0</b> · Бизнесы: <b id="t-biz">0</b></div></div>
+<div class="empire-panel"><h3>📋 ПУТЬ К УДО</h3><div id="udo-status" style="font-size:.8rem">Цель: 9 999 999 ₽</div>
+<div class="progress-bg"><div id="udo-progress" class="progress-fill"></div></div>
+<button class="mini-btn" onclick="applyUDO()">📄 Подать заявление на УДО</button></div>
+<div class="empire-panel" id="expansion-hub"><h3>🧩 EXPANSION HUB</h3>
+<button class="mini-btn" onclick="openExpansion('contracts')">📑 VIP-контракты</button>
+<button class="mini-btn" onclick="openExpansion('tower')">📡 OlegTelecom</button>
+<button class="mini-btn" onclick="openExpansion('crypto')">🪙 KURCH-терминал</button>
+<button class="mini-btn" onclick="openExpansion('overclock')">🟣 Разгон SIM-box</button>
+<button class="mini-btn" onclick="openExpansion('franchise')">🏙️ Франшиза городов</button>
+<button class="mini-btn" onclick="openExpansion('drone')">🚁 Ночная доставка</button>
+<button class="mini-btn" onclick="openExpansion('court')">⚖️ Симулятор суда</button>
+<button class="mini-btn" onclick="openExpansion('sizo')">🔓 Фаза СИЗО №3</button>
+<button class="mini-btn" onclick="openExpansion('grid')">⚡ Энергосеть и бабки</button>
+<button class="mini-btn" onclick="openExpansion('ai')">🧬 Нейро-Олег v2.0</button>
+</div>
                 </div>
                 
                 <!-- ПРАВАЯ ПАНЕЛЬ: ДИНАМИЧЕСКИЙ ВИД -->
@@ -308,7 +339,7 @@
 
     <!-- TASKBAR -->
     <div class="taskbar">
-        <button class="start-btn">OlegOS Start</button>
+        <button class="start-btn" onclick="navView('map')">OlegOS Start</button><button class="start-btn" style="margin-left:6px;background:#111;color:#0ff;border:1px solid #0ff" onclick="resetEmpire()">RESET</button>
         <div class="clock" id="clock">00:00</div>
     </div>
 
@@ -364,7 +395,7 @@
             // --- TYCOON LOGIC ---
             let game = {
                 bal: 0, inc: 0, risk: 0, sims: 0, view: 'map', activeApt: null,
-                bribeCost: 5000, boxCost: 5000,
+                bribeCost: 5000, boxCost: 5000, level: 0, businesses: 0, bizIncome: 0, gigs: 0, udo: false,
                 apts: [
                     { id: 0, name: "Подвал (Подольск)", slots: 3, temp: 25, ac: false, boxes: [] }
                 ],
@@ -534,6 +565,12 @@
                 document.getElementById('t-bal').innerText = Math.floor(game.bal) + " ₽";
                 document.getElementById('t-sims').innerText = game.sims + " шт";
                 document.getElementById('t-inc').innerText = game.inc + " ₽/с";
+                const lv=document.getElementById('t-level');if(lv)lv.textContent=game.level;
+                const bz=document.getElementById('t-biz');if(bz)bz.textContent=game.businesses;
+                const up=document.getElementById('udo-progress');const us=document.getElementById('udo-status');
+                if(up)up.style.width=Math.min(100,game.bal/9999999*100)+'%';
+                if(us&&!game.udo)us.textContent='Накоплено: '+fmt(game.bal)+' / 9 999 999 ₽';
+                if(game.udo&&us)us.textContent='УДО ПОЛУЧЕНО · ИГРА ПРОЙДЕНА';
                 
                 let r = Math.min(100, game.risk);
                 document.getElementById('t-risk-bar').style.width = r + "%";
@@ -542,14 +579,14 @@
                 else if (r < 80) rt.innerText = Math.floor(r) + "% - ИЩУТ ТРАФИК";
                 else rt.innerText = Math.floor(r) + "% - ОМОН В ПУТИ!";
 
-                if(game.risk >= 100) {
+                if(game.risk >= 100 && !window.__bsodTriggered) { window.__bsodTriggered = true;
                     sendTG("Аноним", "ОЛЕГ, ОБЛАВА! СЛИВАЙ БАЗУ!");
                     setTimeout(() => triggerBSOD("ОБНАРУЖЕНЫ МАССОВЫЕ SIM-БОКСЫ В ПОДОЛЬСКЕ"), 2000);
                 }
             }
 
             setInterval(() => {
-                let totalInc = 0;
+                let totalInc = game.bizIncome + game.franchise*50000 + (game.tower?100000:0);
                 game.apts.forEach(a => {
                     let activeSims = 0;
                     
@@ -566,27 +603,114 @@
                             if(s === 1) {
                                 if(!overheated) activeSims++;
                                 // Шанс сгорания (бана) симки
-                                if(Math.random() < 0.03) { b.states[idx] = 0; }
+                                if(Math.random() < (game.contract==='gray'?0.06:0.03)) { b.states[idx] = 0; }
                             }
                         });
                     });
 
-                    if(!overheated) totalInc += activeSims * 5; // 5 руб/сек с каждой зеленой симки
+                    if(!overheated) totalInc += activeSims * 5 * game.overclock * (game.contract==='vip'?100:(game.contract==='gray'?10:1)); // 5 руб/сек с каждой зеленой симки
                 });
 
                 game.inc = totalInc;
                 if(game.inc > 0) {
                     game.bal += game.inc;
+                    if(game.contract==='vip') game.suspicion=Math.min(100,game.suspicion+0.8);
+                    else if(game.contract==='gray') game.suspicion=Math.min(100,game.suspicion+0.2);
+                    if(game.overclock>1) game.suspicion=Math.min(100,game.suspicion+0.1*game.overclock);
                     if(Math.random() > 0.6) game.risk += (game.inc / 1000); // Риск растет от дохода
                 }
                 
                 updateSideUI();
+                saveGame();
                 
                 // Перерисовка текущего экрана для анимации температуры/симок (только если открыта карта или хата)
                 if(game.view === 'map') renderMap();
                 else if(game.view === 'apt') renderApt(game.activeApt);
 
             }, 1000);
+
+
+function toast(msg){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.style.display='block';clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.style.display='none',2600)}
+function fmt(n){return Math.floor(n).toLocaleString('ru-RU')}
+window.doGig=function(){const reward=750+game.level*125;game.bal+=reward;game.gigs++;if(game.gigs%5===0){game.bal+=1500;toast('Серия заказов! Бонус +1 500 ₽')}else toast('Заказ сдан: +'+fmt(reward)+' ₽');updateSideUI();saveGame()}
+window.buyUpgrade=function(){const cost=Math.floor(2500*Math.pow(1.8,game.level));if(game.bal<cost)return toast('Не хватает денег. Фриланс не отменяли.');game.bal-=cost;game.level++;toast('Менеджмент улучшен до уровня '+game.level);updateSideUI();saveGame()}
+window.buyBusiness=function(){const cost=Math.floor(12000*Math.pow(1.7,game.businesses));if(game.bal<cost)return toast('Кофейня стоит '+fmt(cost)+' ₽. Кофе сам себя не продаст.');game.bal-=cost;game.businesses++;game.bizIncome+=25*game.businesses;sendTG('Бизнес-аналитик','Новая кофейня открыта. Доход растёт без твоего участия.');toast('Кофейня открыта: +'+(25*game.businesses)+' ₽/с');updateSideUI();saveGame()}
+window.applyUDO=function(){const price=9999999;if(game.udo)return toast('УДО уже получено. Кампания завершена!');if(game.bal<price)return toast('До УДО не хватает '+fmt(price-game.bal)+' ₽. Работай, предприниматель.');game.bal-=price;game.udo=true;sendTG('Система','Заявление одобрено. УДО получено. Империя переходит в свободный режим.');toast('УДО ПОЛУЧЕНО! Ты прошёл игру.');saveGame();updateSideUI()}
+function saveGame(){try{localStorage.setItem('olegos_empire_save_v6',JSON.stringify({bal:game.bal,sims:game.sims,risk:game.risk,level:game.level,businesses:game.businesses,bizIncome:game.bizIncome,gigs:game.gigs,udo:game.udo,apts:game.apts,market:game.market,bribeCost:game.bribeCost,contract:game.contract,tower:game.tower,crypto:game.crypto,overclock:game.overclock,franchise:game.franchise,droneParts:game.droneParts,droneScore:game.droneScore,courtCards:game.courtCards,sizoPhase:game.sizoPhase,tea:game.tea,authority:game.authority,suspicion:game.suspicion,generators:game.generators,aiLevel:game.aiLevel,aiAwake:game.aiAwake}))}catch(e){}}
+function loadGame(){try{const raw=localStorage.getItem('olegos_empire_save_v6');if(!raw)return;const s=JSON.parse(raw);['bal','sims','risk','level','businesses','bizIncome','gigs','udo','apts','market','bribeCost','contract','tower','crypto','overclock','franchise','droneParts','droneScore','courtCards','sizoPhase','tea','authority','suspicion','generators','aiLevel','aiAwake'].forEach(k=>{if(s[k]!==undefined)game[k]=s[k]})}catch(e){}}
+window.resetEmpire=function(){if(!confirm('Сбросить весь прогресс?'))return;localStorage.removeItem('olegos_empire_save_v6');location.reload()};
+
+
+            // --- EXPANSION HUB: fictional arcade mechanics only ---
+            game.contract = game.contract || 'white';
+            game.tower = game.tower || false;
+            game.crypto = game.crypto || 0;
+            game.overclock = game.overclock || 1;
+            game.franchise = game.franchise || 0;
+            game.droneParts = game.droneParts || 0;
+            game.droneScore = game.droneScore || 0;
+            game.courtCards = game.courtCards || 0;
+            game.sizoPhase = game.sizoPhase || false;
+            game.tea = game.tea || 0;
+            game.authority = game.authority || 0;
+            game.suspicion = game.suspicion || 0;
+            game.generators = game.generators || 0;
+            game.aiLevel = game.aiLevel || 0;
+            game.aiAwake = game.aiAwake || false;
+
+            window.closeExpansion = function(){ const m=document.getElementById('expansion-modal'); if(m)m.style.display='none'; };
+            function showExpansion(title, body){
+                document.getElementById('expansion-title').textContent=title;
+                document.getElementById('expansion-content').innerHTML=body;
+                document.getElementById('expansion-modal').style.display='block';
+            }
+            window.openExpansion = function(type){
+                const btn=(label,fn)=>`<button class="mini-btn" onclick="${fn}">${label}</button>`;
+                const money=()=>fmt(game.bal);
+                if(type==='contracts'){
+                    showExpansion('📑 ДАРКНЕТ-КОНТРАКТЫ · АРКАДА',`
+                    <p>Выбери игровой контракт. Это вымышленная экономика, а не инструкция по реальным схемам.</p>
+                    <div class="apt-card"><div><b>Белый: доставка / объявления</b><br><small>Небольшая прибыль, минимальный игровой риск.</small></div>${btn('Активировать','setContract("white")')}</div>
+                    <div class="apt-card"><div><b>Серый: крипто-квесты</b><br><small>Высокая прибыль, симки быстрее выходят из строя.</small></div>${btn('Активировать','setContract("gray")')}</div>
+                    <div class="apt-card"><div><b>VIP: рискованный сюжетный контракт</b><br><small>Максимальная прибыль и резкий рост шкалы внимания.</small></div>${btn('Активировать','setContract("vip")')}</div>
+                    <p id="contract-status">Текущий контракт: ${game.contract}</p>`);
+                } else if(type==='tower'){
+                    showExpansion('📡 OLEGTELECOM · БАШНЯ',`<p>Фантастическая игровая вышка: покупка открывает мощный пассивный бонус и увеличивает подозрение района.</p><p>Баланс: ${money()} ₽ · Цена: 1 000 000 ₽</p>${btn(game.tower?'Вышка уже построена':'Построить вышку · 1 000 000 ₽','buyTower()')}<p>Статус: ${game.tower?'АКТИВНА · +100 000 ₽/с':'не построена'}</p>`);
+                } else if(type==='crypto'){
+                    showExpansion('🪙 KURCH-TERMINAL · ВЫМЫШЛЕННЫЙ РЫНОК',`<p>Крипто-рынок генерируется случайно. Это аркадный риск, не инвестиционный совет.</p><p>Баланс: ${money()} ₽ · KURCH: ${fmt(game.crypto)}</p>${btn('Купить KURCH за 10 000 ₽','cryptoBuy()')}${btn('Случайный рыночный скачок','cryptoTrade()')}<p>Последняя сделка: <b id="crypto-result">рынок ждёт тебя</b></p>`);
+                } else if(type==='overclock'){
+                    showExpansion('🟣 SIM-BOX OVERCLOCK',`<p>Вымышленный ползунок мощности. Выше мощность — выше доход, но быстрее растут перегрев и подозрение.</p><label>Мощность: <b id="oc-value">${game.overclock}x</b></label><input type="range" min="1" max="10" value="${game.overclock}" oninput="setOverclock(this.value)" style="width:100%"><p>Текущий множитель дохода: ${game.overclock}x</p><p>Охлаждение: ${game.generators} улучшений</p>${btn('Купить охлаждение · 15 000 ₽','buyCooling()')}`);
+                } else if(type==='franchise'){
+                    showExpansion('🏙️ ФРАНШИЗА «ЮНЫЙ СИМБОКСЕР»',`<p>Нанимай вымышленные команды городов. Команды приносят пассивный доход, но иногда теряют эффективность.</p><p>Городов в сети: ${game.franchise} · Доход франшизы: ${fmt(game.franchise*50000)} ₽/с</p>${btn('Нанять городскую команду · 100 000 ₽','hireFranchise()')}<p>Доступные районы: Химки · Люберцы · Мытищи · Балашиха</p>`);
+                } else if(type==='drone'){
+                    showExpansion('🚁 НОЧНОЙ ДРОН-КВЕСТ',`<p>Аркадная мини-игра: выбери маршрут, избегай игровых прожекторов и набирай очки. Никаких реальных маршрутов или инструкций.</p><div class="stat-box">Счёт вылетов: <b>${game.droneScore}</b> · Детали: <b>${game.droneParts}</b></div>${btn('Манёвр влево','droneMove("left")')}${btn('Манёвр вправо','droneMove("right")')}${btn('ЭМИ-щит · 2 000 ₽','droneShield()')}${btn('Завершить вылет и получить награду','droneFinish()')}`);
+                } else if(type==='court'){
+                    showExpansion('⚖️ PHOENIX WRIGHT: КРИМИНАЛЬНЫЙ ПОДОЛЬСК',`<p><b>Прокурор:</b> «В материалах дела обнаружены подозрительные игровые логи!»</p><p>Выбери аргумент защиты. Решение суда зависит от собранных карт.</p>${btn('Справка из школы · 2 000 ₽','courtMove("school")')}${btn('Экспертное заключение · 5 000 ₽','courtMove("expert")')}${btn('Честно признать ошибку · бесплатно','courtMove("honest")')}<p>Карты защиты: ${game.courtCards} · Репутация: ${game.authority}</p>`);
+                } else if(type==='sizo'){
+                    showExpansion('🔓 СИЗО №3 · ВТОРАЯ ФАЗА',`<p>После УДО/сюжетного решения открывается отдельный ресурсный режим.</p><p>Чай: ${game.tea} · Авторитет: ${game.authority} · Крипто-кошелёк: ${fmt(game.crypto)} KURCH</p>${btn('Обменять 5 000 ₽ на чай','sizoTea()')}${btn('Выполнить спокойное задание камеры','sizoTask()')}${btn('Собрать кентов на удалённый менеджмент','hireFranchise()')}`);
+                } else if(type==='grid'){
+                    showExpansion('⚡ ЭНЕРГОСЕТЬ И СТАРШАЯ ПО ПОДЪЕЗДУ',`<p>Следи за шумом и нагрузкой. Решай проблему игровыми улучшениями, а не реальными вмешательствами в электросети.</p><div class="stat-box">Подозрение района: ${Math.floor(game.suspicion)}%</div><div class="progress-bg"><div class="progress-fill" style="width:${Math.min(100,game.suspicion)}%"></div></div>${btn('Купить тихое охлаждение · 15 000 ₽','buyCooling()')}${btn('Помочь двору · 5 000 ₽','calmNeighbors()')}${btn('Генератор · 50 000 ₽','buyGenerator()')}`);
+                } else if(type==='ai'){
+                    showExpansion('🧬 НЕЙРО-ОЛЕГ v2.0',`<p>Прокачай игрового ИИ для автоматизации дохода. На максимуме откроется секретная научно-фантастическая концовка.</p><p>Уровень ИИ: ${game.aiLevel}/5</p>${btn('Обучить ИИ · 25 000 ₽','trainAI()')}${btn('Запустить секретный протокол','wakeAI()')}`);
+                }
+            };
+            window.setContract=function(c){game.contract=c;toast('Контракт активирован: '+c);saveGame();openExpansion('contracts')};
+            window.buyTower=function(){if(game.tower)return toast('Вышка уже активна');if(game.bal<1000000)return toast('Не хватает 1 000 000 ₽');game.bal-=1000000;game.tower=true;game.suspicion+=20;toast('OlegTelecom запущен: +100 000 ₽/с');saveGame();updateSideUI();openExpansion('tower')};
+            window.cryptoBuy=function(){if(game.bal<10000)return toast('Нужно 10 000 ₽');game.bal-=10000;game.crypto+=10000;toast('KURCH куплен');saveGame();updateSideUI();openExpansion('crypto')};
+            window.cryptoTrade=function(){if(game.crypto<=0)return toast('Сначала купи KURCH');const mult=[0.2,0.5,1,2,5,10][Math.floor(Math.random()*6)];const before=game.crypto;game.crypto=Math.floor(game.crypto*mult);const diff=game.crypto-before;game.bal+=diff;document.getElementById('crypto-result').textContent='x'+mult+' · '+(diff>=0?'+':'')+fmt(diff)+' ₽';toast('Рынок обновился: множитель x'+mult);saveGame();updateSideUI();openExpansion('crypto')};
+            window.setOverclock=function(v){game.overclock=Number(v);const el=document.getElementById('oc-value');if(el)el.textContent=game.overclock+'x';game.suspicion=Math.min(100,game.suspicion+0.2);saveGame()};
+            window.buyCooling=function(){if(game.bal<15000)return toast('Нужно 15 000 ₽');game.bal-=15000;game.generators++;game.suspicion=Math.max(0,game.suspicion-10);toast('Охлаждение улучшено');saveGame();updateSideUI();};
+            window.hireFranchise=function(){if(game.bal<100000)return toast('Нужно 100 000 ₽');game.bal-=100000;game.franchise++;toast('Новая команда подключена');saveGame();updateSideUI();};
+            window.droneMove=function(dir){const danger=Math.random();if(danger<0.25){game.suspicion=Math.min(100,game.suspicion+15);toast('Прожектор засёк дрон! +15 подозрения')}else{game.droneScore+=dir==='left'?2:3;game.droneParts++;toast('Манёвр успешен. Очки: '+game.droneScore)}saveGame();openExpansion('drone')};
+            window.droneShield=function(){if(game.bal<2000)return toast('Нужно 2 000 ₽');game.bal-=2000;game.suspicion=Math.max(0,game.suspicion-5);toast('Аркадный щит активирован');saveGame();updateSideUI();openExpansion('drone')};
+            window.droneFinish=function(){const reward=game.droneScore*250+game.droneParts*100;game.bal+=reward;game.droneScore=0;game.droneParts=0;toast('Вылет завершён: +'+fmt(reward)+' ₽');saveGame();updateSideUI();openExpansion('drone')};
+            window.courtMove=function(card){const costs={school:2000,expert:5000,honest:0};const cost=costs[card]||0;if(game.bal<cost)return toast('Не хватает денег на карту');game.bal-=cost;game.courtCards++;if(card==='honest'){game.authority+=3;game.suspicion=Math.max(0,game.suspicion-10);toast('Суд учёл честную позицию: +3 авторитета')}else{game.authority+=1;game.suspicion=Math.max(0,game.suspicion-5);toast('Аргумент принят: +1 авторитет')}saveGame();updateSideUI();openExpansion('court')};
+            window.sizoTea=function(){if(game.bal<5000)return toast('Нужно 5 000 ₽');game.bal-=5000;game.tea+=5;toast('Запасы чая пополнены');saveGame();updateSideUI();openExpansion('sizo')};
+            window.sizoTask=function(){game.authority+=1;game.tea+=1;game.bal+=2500;toast('Задание выполнено: +2 500 ₽, +чай, +авторитет');saveGame();updateSideUI();openExpansion('sizo')};
+            window.calmNeighbors=function(){if(game.bal<5000)return toast('Нужно 5 000 ₽');game.bal-=5000;game.suspicion=Math.max(0,game.suspicion-25);toast('Дворовое мероприятие прошло успешно');saveGame();updateSideUI();openExpansion('grid')};
+            window.buyGenerator=function(){if(game.bal<50000)return toast('Нужно 50 000 ₽');game.bal-=50000;game.generators++;game.suspicion=Math.max(0,game.suspicion-15);toast('Генератор установлен в игре');saveGame();updateSideUI();openExpansion('grid')};
+            window.trainAI=function(){if(game.bal<25000)return toast('Нужно 25 000 ₽');if(game.aiLevel>=5)return toast('ИИ уже на максимальном уровне');game.bal-=25000;game.aiLevel++;game.bizIncome+=game.aiLevel*250;toast('Нейро-Олег обучен: уровень '+game.aiLevel);saveGame();updateSideUI();openExpansion('ai')};
+            window.wakeAI=function(){if(game.aiLevel<5)return toast('Нужен 5-й уровень ИИ');game.aiAwake=true;game.sizoPhase=true;game.authority+=10;toast('СЕКРЕТНАЯ КОНЦОВКА: Нейро-Олег открыл цифровое УДО');saveGame();updateSideUI();openExpansion('ai')};
 
             // --- EXTERNAL APPS ---
             window.playAudio = function() {
@@ -613,6 +737,7 @@
             };
 
             // Init
+            loadGame();
             navView('map');
             setTimeout(() => sendTG("Система", "Олег, панель SIM-Box Manager v5.0 готова. Сгенерируй первые деньги вручную, затем закупай оборудование."), 3000);
 
