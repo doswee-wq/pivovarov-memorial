@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OlegOS v9.0: BALANCED ECONOMY & MODULAR COOLING</title>
+    <title>OlegOS v9.1: SMART COOLING SYSTEM</title>
     <style>
         :root {
             --bg: #010204;
@@ -289,7 +289,7 @@
 
     <!-- TASKBAR -->
     <div class="taskbar">
-        <button class="start-btn" onclick="openWindow('app-tycoon')">OlegOS v9.0</button>
+        <button class="start-btn" onclick="openWindow('app-tycoon')">OlegOS v9.1</button>
         <span id="log-ticker" style="font-size:0.75rem; color:#0a0; white-space:nowrap; overflow:hidden; flex-grow:1; margin:0 10px;">> Система запущена... Цены сбалансированы.</span>
         <div class="clock" id="clock">00:00:00</div>
     </div>
@@ -442,7 +442,7 @@
                     <button class="btn-main" style="width:auto; padding:4px 8px; border-color:${a.turbo?'var(--danger)':'var(--warn)'}; color:${a.turbo?'var(--danger)':'var(--warn)'};" onclick="toggleTurbo(${a.id})">${a.turbo?'🔥 ТУРБО-РЕЖИМ ВКЛЮЧЕН (x2 ДОХОД)':'🚀 ВКЛЮЧИТЬ ТУРБО-РЕЖИМ'}</button>
                 </div>
             </div>
-            <div style="font-size:0.75rem; color:#888; margin-bottom:10px;">> Устанавливай отдельный кулер на каждый бокс всего за 1,200 ₽! В Турбо-режиме боксы дают x2 денег, но без кулеров моментально перегреются.</div>
+            <div style="font-size:0.75rem; color:#888; margin-bottom:10px;">> ❄️ ПРАВИЛО ОХЛАЖДЕНИЯ: Когда у ВСЕХ боксов в комнате установлены кулеры, температура падает на 5°C/сек и стабильно держится не выше 40°C (даже в Турбо-режиме)!</div>
             <button class="btn-main" style="border-color:var(--warn); color:var(--warn); margin-bottom:15px;" onclick="repairApt(${a.id})">🔄 ПОЧИНИТЬ ВСЕ БОКСЫ (Требуются SIM со склада)</button>
             <div class="rack-container">`;
             
@@ -740,12 +740,27 @@
             let vpnRed = game.upgrades.vpn.owned ? 0.5 : 1.0;
 
             game.apts.forEach(a => {
-                let heat = 0;
+                let allCooled = a.boxes.length > 0 && a.boxes.every(b => b.cooler);
                 let turboMult = a.turbo ? 2.5 : 1.0;
-                // Каждый бокс без кулера греет комнату, с кулером почти не греет!
-                a.boxes.forEach(b => { heat += (b.cooler ? 0.1 : 1.2) * turboMult; });
-                let cool = 0.6; // Естественное рассеивание тепла комнаты
-                a.temp = Math.max(20, a.temp + heat - cool);
+
+                if(allCooled) {
+                    // Когда у всех боксов есть вентилятор: падает на 5°C в сек до 40°C, затем держится не выше 40°C
+                    if(a.temp > 40) {
+                        a.temp = Math.max(40, a.temp - 5);
+                    } else {
+                        // Температура держится в комфортном диапазоне 25-40°C и никогда не превышает 40°C
+                        let targetTemp = a.turbo ? 38 : 28;
+                        if(a.temp < targetTemp) a.temp += 0.5;
+                        else if(a.temp > targetTemp) a.temp -= 0.5;
+                        a.temp = Math.min(40, Math.max(20, a.temp));
+                    }
+                } else {
+                    // Если хотя бы у одного бокса нет кулера — комната нагревается
+                    let heat = 0;
+                    a.boxes.forEach(b => { heat += (b.cooler ? 0.1 : 1.5) * turboMult; });
+                    let cool = 0.5; // Естественное рассеивание тепла
+                    a.temp = Math.max(20, a.temp + heat - cool);
+                }
                 let oh = a.temp >= 85;
 
                 let act = 0;
