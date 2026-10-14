@@ -2,822 +2,2309 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OlegOS v9.1: SMART COOLING SYSTEM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>PODOLSK SYNDICATE // DESKTOP v2.5</title>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #010204;
-            --primary: #00ff41;
-            --secondary: #00ffff;
-            --purple: #d600ff;
-            --danger: #ff003c;
-            --warn: #ffcc00;
-            --window-bg: rgba(2, 6, 3, 0.98);
-            --window-border: #00ff41;
+            --bg-dark: #090d16;
+            --bg-panel: #111827;
+            --bg-card: #1e293b;
+            --bg-card-hover: #26354d;
+            --border: #334155;
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.35);
+            --accent-blue: #3b82f6;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', monospace; -webkit-tap-highlight-color: transparent; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
         body {
-            background-color: var(--bg);
-            background-image: 
-                radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.04) 0%, transparent 85%),
-                linear-gradient(rgba(0, 255, 65, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 65, 0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
-            color: var(--primary);
-            height: 100vh; overflow: hidden; position: relative;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        .crt-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px; z-index: 1; pointer-events: none; opacity: 0.25;
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
         }
 
-        button { cursor: pointer; user-select: auto; -webkit-user-select: auto; }
-
-        /* TOP STATUS BAR (DAYS & UDO) */
-        .top-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 38px;
-            background: #000; border-bottom: 2px solid var(--purple);
-            z-index: 500; display: flex; align-items: center; padding: 0 15px; gap: 15px;
-            box-shadow: 0 0 12px rgba(214, 0, 255, 0.3); justify-content: space-between;
+        /* TOP BAR */
+        .topbar {
+            height: 68px;
+            background: rgba(17, 24, 39, 0.95);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
-        .day-counter { background: #1a0022; border: 1px solid var(--purple); color: #fff; padding: 3px 8px; font-weight: bold; font-size: 0.8rem; border-radius: 3px; white-space: nowrap; }
-        .udo-container { display: flex; align-items: center; gap: 10px; flex-grow: 1; max-width: 600px; }
-        .udo-bar-track { flex-grow: 1; height: 16px; background: #1a0022; border: 1px solid var(--purple); position: relative; overflow: hidden; border-radius: 2px; }
-        .udo-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--purple), var(--secondary)); transition: width 0.5s; }
-        .udo-bar-label { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 0.7rem; line-height: 14px; color: #fff; font-weight: bold; text-shadow: 1px 1px 2px #000; }
-        .save-indicator { font-size: 0.7rem; color: #666; }
 
-        /* Desktop */
-        .desktop { padding: 50px 20px 20px 20px; display: grid; grid-template-columns: repeat(auto-fill, 100px); gap: 15px; z-index: 10; position: relative; }
-        .icon { background: rgba(0, 15, 5, 0.7); border: 1px solid #113311; display: flex; flex-direction: column; align-items: center; text-align: center; transition: 0.1s; color: var(--primary); z-index: 20; padding: 10px 4px; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
-        .icon:hover { background: rgba(0, 255, 65, 0.12); border-color: var(--primary); transform: translateY(-3px); }
-        .icon:active { transform: scale(0.95); }
-        .icon-emoji { font-size: 2.5rem; pointer-events: none; }
-        .icon-text { font-size: 0.7rem; background: #000; padding: 3px 5px; margin-top: 8px; border: 1px solid #333; pointer-events: none; font-weight: bold; width: 95%; text-overflow: ellipsis; overflow: hidden; }
-
-        /* Windows */
-        .window { position: absolute; top: 48px; left: 5%; width: 700px; max-width: 95vw; background: var(--window-bg); border: 1px solid var(--window-border); box-shadow: 0 0 30px rgba(0, 255, 65, 0.12); display: none; flex-direction: column; z-index: 50; overflow: hidden; }
-        #app-tycoon { width: 1100px; top: 44px; left: 2%; }
-        
-        .window-header { background: #000; color: var(--primary); border-bottom: 1px solid var(--primary); padding: 8px 12px; display: flex; justify-content: space-between; font-weight: bold; cursor: move; align-items: center; }
-        .close-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 2px 8px; font-weight: bold; transition: 0.2s;}
-        .close-btn:hover { background: var(--danger); color: #fff; }
-        .window-content { padding: 12px; height: 550px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; position: relative; }
-        #app-tycoon .window-content { height: 630px; padding: 10px; }
-
-        /* Tycoon Layout */
-        .tycoon-layout { display: flex; height: 100%; gap: 10px; }
-        .tycoon-left { width: 320px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #1a331a; padding-right: 10px; overflow-y: auto; flex-shrink: 0; }
-        .tycoon-right { flex-grow: 1; display: flex; flex-direction: column; background: #010301; border: 1px solid #0a1a0a; padding: 15px; overflow-y: auto; position: relative; }
-
-        .stat-box { border: 1px solid #1a331a; padding: 8px; background: #000; text-align: center; }
-        .stat-box.cyan { border-color: #005555; background: #000a0a; color: var(--secondary); }
-        .stat-box.purple { border-color: #330044; background: #0a000f; color: #fff; }
-        .val { font-size: 1.25rem; font-weight: bold; margin-top: 4px; color: var(--primary); }
-
-        .btn-main { background: #020a02; color: var(--primary); border: 1px solid var(--primary); padding: 10px; font-size: 0.85rem; text-transform: uppercase; transition: 0.1s; font-weight: bold; width: 100%; text-align: center;}
-        .btn-main:hover { background: #051a05; }
-        .btn-main:active { transform: scale(0.98); background: var(--primary); color: #000; }
-        .btn-main:disabled { opacity: 0.4; border-color: #333; color: #666; pointer-events: none; }
-
-        .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .btn-nav { background: #000; color: #aaa; border: 1px solid #333; padding: 8px; font-size: 0.8rem; text-align: center; transition: 0.2s;}
-        .btn-nav:hover { background: #111; color: #fff; border-color: var(--primary); }
-        .btn-nav.active { background: var(--primary); color: #000; font-weight: bold; border-color: var(--primary); }
-
-        .risk-bar-bg { width: 100%; height: 16px; border: 1px solid var(--danger); position: relative; background: #200; }
-        .risk-bar { width: 0%; height: 100%; background: var(--danger); transition: 0.5s linear; }
-        .risk-text { position: absolute; top: 0; left: 0; width: 100%; text-align: center; color: #fff; font-size: 0.7rem; line-height: 14px; font-weight: bold; text-shadow: 1px 1px #000; }
-
-        /* Cards */
-        .apt-card { border: 1px solid #1a331a; padding: 12px; transition: 0.1s; background: #030803; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .apt-card:hover { border-color: var(--primary); background: #051105; }
-        .status-badge { padding: 3px 6px; font-size: 0.7rem; font-weight: bold; border-radius: 2px; border: 1px solid transparent; }
-        .st-ok { color: var(--primary); border-color: var(--primary); }
-        .st-warn { color: var(--warn); border-color: var(--warn); background: rgba(255,204,0,0.1); }
-        .st-err { color: var(--danger); border-color: var(--danger); background: rgba(255,0,0,0.1); }
-
-        /* Racks */
-        .rack-container { background: #000; border: 2px solid #222; border-radius: 3px; padding: 10px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
-        .rack-unit { display: flex; justify-content: space-between; align-items: center; background: #050505; border: 1px solid #1a1a1a; padding: 8px 12px; font-size: 0.85rem; color: #888; flex-wrap: wrap; gap: 8px; }
-        .rack-info { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .rack-led { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-        .led-on { background: var(--primary); box-shadow: 0 0 5px var(--primary); }
-        .led-off { background: var(--danger); box-shadow: 0 0 5px var(--danger); }
-        .rack-controls { display: flex; gap: 6px; align-items: center; }
-        .btn-repair { background: transparent; color: var(--warn); border: 1px solid var(--warn); padding: 3px 8px; font-size: 0.75rem; }
-        .btn-repair:hover { background: var(--warn); color: #000; }
-        .btn-cooler { background: transparent; color: var(--secondary); border: 1px solid var(--secondary); padding: 3px 8px; font-size: 0.75rem; transition: 0.1s; }
-        .btn-cooler:hover { background: var(--secondary); color: #000; }
-
-        .apt-header { display: flex; justify-content: space-between; border-bottom: 1px solid #1a331a; padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;}
-        .temp-bar-bg { width: 80px; height: 8px; border: 1px solid #444; background: #000; display: inline-block; vertical-align: middle;}
-        .temp-bar { height: 100%; width: 0%; transition: 0.5s; }
-
-        /* Crypto */
-        #crypto-canvas { width: 100%; height: 200px; background: #000; border: 1px solid #113311; margin-bottom: 10px; }
-
-        /* Taskbar */
-        .taskbar { position: fixed; bottom: 0; left: 0; width: 100%; height: 38px; background: #000; border-top: 1px solid #1a331a; display: flex; align-items: center; padding: 0 12px; z-index: 1000; gap: 10px; }
-        .start-btn { background: #051105; color: var(--primary); padding: 5px 15px; font-weight: bold; border: 1px solid var(--primary); }
-        .clock { margin-left: auto; color: #666; font-size: 0.85rem; }
-
-        /* Modal: Raid & Ransom */
-        .modal-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 99999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
-        .raid-box { background: #150005; border: 3px solid var(--danger); max-width: 600px; width: 100%; padding: 25px; box-shadow: 0 0 50px var(--danger); }
-
-        /* Epic Ending */
-        #epic-ending { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; flex-direction: column; padding: 50px; font-family: 'Courier New', monospace; overflow: hidden; }
-        .epic-line { color: var(--primary); font-size: 1.2rem; margin: 4px 0; opacity: 0; animation: fadeIn 0.1s forwards; text-shadow: 0 0 5px var(--primary); }
-        .epic-red { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
-        .epic-purple { color: var(--purple); text-shadow: 0 0 5px var(--purple); font-weight: bold; font-size: 1.5rem;}
-        @keyframes fadeIn { to { opacity: 1; } }
-
-        @media (max-width: 820px) {
-            .window { width: 100% !important; left: 0 !important; top: 38px !important; height: calc(100vh - 76px) !important; border: none; }
-            #app-tycoon .window-content { height: 100%; }
-            .tycoon-layout { flex-direction: column; }
-            .tycoon-left { width: 100%; border-right: none; border-bottom: 1px solid var(--primary); padding-right: 0; padding-bottom: 10px; height: auto; max-height: 48vh; }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
+
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            color: #052e16;
+            box-shadow: 0 0 15px var(--accent-green-glow);
+        }
+
+        .brand-title h1 {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+        }
+
+        .brand-title span {
+            font-size: 11px;
+            color: var(--accent-green);
+            display: block;
+        }
+
+        /* METRICS BAR */
+        .metrics {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .metric-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            min-width: 135px;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .val-green { color: var(--accent-green); }
+        .val-blue { color: var(--accent-blue); }
+        .val-amber { color: var(--accent-amber); }
+        .val-red { color: var(--accent-red); }
+
+        /* GOAL PROGRESS */
+        .goal-container {
+            width: 300px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .goal-container:hover {
+            border-color: var(--accent-amber);
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: #0f172a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #10b981);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* MAIN WORKSPACE */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 350px 1fr 390px;
+            height: calc(100vh - 68px);
+            overflow: hidden;
+        }
+
+        /* LEFT SIDEBAR */
+        .sidebar-left {
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .nav-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: 1px solid var(--border);
+            background: #0b1120;
+        }
+
+        .nav-tab {
+            padding: 12px 6px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-main);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .nav-tab.active {
+            color: var(--accent-green);
+            border-bottom-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.07);
+        }
+
+        .badge-count {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            background: var(--accent-red);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 10px;
+        }
+
+        .tab-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* CENTER MAP */
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #0b1322;
+        }
+
+        #podolsk-map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: #0b1322;
+            cursor: crosshair;
+        }
+
+        .reject-marker {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.28);
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.9);
+            animation: rejectPop 1.2s ease forwards;
+            pointer-events: none;
+        }
+
+        @keyframes rejectPop {
+            0% { transform: scale(0.4); opacity: 1; }
+            30% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1.45); opacity: 0; }
+        }
+
+        /* Dark Cyberpunk Map Filter */
+        .dark-tiles .leaflet-tile-pane {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(92%);
+        }
+
+        .map-hud-top {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 500;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .hud-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            pointer-events: auto;
+        }
+
+        .hud-btn {
+            background: rgba(17, 24, 39, 0.92);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(8px);
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .hud-btn:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .hud-btn.active-mode {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 18px;
+            left: 14px;
+            z-index: 500;
+            background: rgba(17, 24, 39, 0.92);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 8px;
+            display: flex;
+            gap: 14px;
+            font-size: 11px;
+            backdrop-filter: blur(8px);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* RIGHT SIDEBAR (BUILDING INSPECTOR) */
+        .sidebar-right {
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .inspector-header {
+            padding: 16px 20px;
+            background: #0b1120;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .inspector-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px;
+        }
+
+        /* CARDS & UI ELEMENTS */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            border-color: #475569;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .tag-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .tag-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .tag-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .tag-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+        .btn {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .btn-green {
+            background: var(--accent-green);
+            color: #052e16;
+        }
+        .btn-green:hover:not(:disabled) {
+            background: #34d399;
+            box-shadow: 0 0 14px var(--accent-green-glow);
+        }
+
+        .btn-red {
+            background: var(--accent-red);
+            color: white;
+        }
+        .btn-red:hover:not(:disabled) {
+            background: #f87171;
+        }
+
+        .btn-amber {
+            background: var(--accent-amber);
+            color: #451a03;
+        }
+        .btn-amber:hover:not(:disabled) {
+            background: #fbbf24;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+        .btn-outline:hover:not(:disabled) {
+            border-color: var(--text-muted);
+            background: rgba(255,255,255,0.04);
+        }
+
+        /* TRAIT PILLS */
+        .traits-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 8px 0;
+        }
+
+        .trait-pill {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* SIMBOX SLOTS */
+        .slots-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .slot-box {
+            background: #0f172a;
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .slot-box.installed {
+            border-style: solid;
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.06);
+        }
+
+        /* EVENT LOG */
+        .log-box {
+            height: 145px;
+            background: #070a12;
+            border-top: 1px solid var(--border);
+            padding: 10px 14px;
+            overflow-y: auto;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            color: var(--text-muted);
+        }
+
+        /* CUSTOM MAP MARKERS */
+        .house-marker {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: bold;
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.85);
+            transition: transform 0.15s;
+        }
+        .house-marker:hover {
+            transform: scale(1.25);
+        }
+        .marker-free {
+            background: #1e293b;
+            border-color: #94a3b8;
+            color: #f8fafc;
+        }
+        .marker-owned {
+            background: #f59e0b;
+            border-color: #fef3c7;
+            color: #451a03;
+        }
+        .marker-active {
+            background: #10b981;
+            border-color: #d1fae5;
+            color: #052e16;
+            box-shadow: 0 0 14px #10b981;
+        }
+        .marker-robbed {
+            background: #ef4444;
+            border-color: #fee2e2;
+            color: #fff;
+            animation: pulseRed 1s infinite;
+        }
+
+        .district-label {
+            color: rgba(148, 163, 184, 0.75);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 6px #000, 0 0 10px #000;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        @keyframes pulseRed {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+            70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* TOAST NOTIFICATION */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 410px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 360px;
+        }
+
+        .toast {
+            background: rgba(17, 24, 39, 0.96);
+            border-left: 4px solid var(--accent-green);
+            border-top: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            font-size: 12px;
+            animation: slideIn 0.25s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(40px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     </style>
 </head>
 <body>
-    <div class="crt-overlay"></div>
 
-    <!-- TOP BAR (DAYS & UДО) -->
-    <div class="top-bar">
-        <div class="day-counter" id="day-counter">📅 ДЕНЬ 1 (05:00 до смены)</div>
-        <div class="udo-container">
-            <span style="color:var(--purple); font-weight:bold; font-size:0.75rem; white-space:nowrap;">🎯 УДО: 10М</span>
-            <div class="udo-bar-track">
-                <div class="udo-bar-fill" id="udo-fill"></div>
-                <div class="udo-bar-label" id="udo-label">0 / 10,000,000 ₽</div>
+    <!-- TOP BAR -->
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-logo mono">P</div>
+            <div class="brand-title">
+                <h1>PODOLSK SYNDICATE <span class="mono" style="display:inline; font-size:12px; color:#60a5fa;">// DESKTOP v2.5</span></h1>
+                <span class="mono">СИМУЛЯТОР СЕТИ SIM-БОКСОВ & ВЫКУПА ПОДОЛЬСКА</span>
             </div>
-            <button class="btn-main" style="width:auto; padding:2px 8px; font-size:0.7rem; border-color:var(--purple); color:var(--purple);" onclick="claimUDO()">УДО</button>
         </div>
-        <button class="btn-main" style="width:auto; padding:2px 6px; font-size:0.65rem; border-color:#555; color:#888;" onclick="hardReset()">СБРОС</button>
-    </div>
 
-    <!-- DESKTOP -->
-    <div class="desktop">
-        <button class="icon" onclick="openWindow('app-tycoon')">
-            <div class="icon-emoji">🏢</div><div class="icon-text">Empire_v9.exe</div>
-        </button>
-        <button class="icon" onclick="openWindow('app-upgrades')">
-            <div class="icon-emoji">🕶️</div><div class="icon-text">Darknet</div>
-        </button>
-        <button class="icon" onclick="openWindow('app-crypto')">
-            <div class="icon-emoji">🪙</div><div class="icon-text">$KURCH_Trade</div>
-        </button>
-        <button class="icon" onclick="openWindow('app-drone')">
-            <div class="icon-emoji">🚁</div><div class="icon-text">Дроны</div>
-        </button>
-    </div>
-
-    <!-- APP 1: TYCOON -->
-    <div id="app-tycoon" class="window" style="display:flex;">
-        <div class="window-header">
-            <span>[root@podolsk] SIM-Box Empire v9.0 - REBALANCED & MODULAR COOLING</span>
-            <button class="close-btn" onclick="closeWindow('app-tycoon')">X</button>
+        <div class="metrics">
+            <div class="metric-box">
+                <span class="metric-label">Баланс крипто-кассы</span>
+                <span class="metric-value mono val-green" id="ui-balance">35 000 ₽</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Доход сети / сек</span>
+                <span class="metric-value mono val-blue" id="ui-income">+261 ₽/с</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Квартиры / Симбоксы</span>
+                <span class="metric-value mono val-amber" id="ui-nodes">1 кв. / 1 бокс.</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">Активные дропы</span>
+                <span class="metric-value mono" id="ui-drops">1 чел.</span>
+            </div>
         </div>
-        <div class="window-content">
-            <div class="tycoon-layout">
-                <div class="tycoon-left">
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                        <div class="stat-box">БАЛАНС<div class="val" id="t-bal">0 ₽</div></div>
-                        <div class="stat-box">ДОХОД<div class="val" id="t-inc">0 ₽/с</div></div>
-                    </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                        <div class="stat-box cyan">СКЛАД SIM<div class="val" id="t-sims" style="color:var(--secondary)">0</div></div>
-                        <div class="stat-box purple">МНОЖИТЕЛЬ<div class="val" id="t-mult" style="color:#fff">x1.0</div></div>
-                    </div>
 
-                    <div style="font-size:0.7rem; color:var(--warn); font-weight:bold; margin-top:4px;" id="raid-chance-label">🚨 ШАНС ОБЛАВЫ СЕГОДНЯ: 2.0%</div>
-                    <div class="risk-bar-bg">
-                        <div class="risk-bar" id="t-risk-bar" style="width:2%;"></div>
-                        <div class="risk-text" id="t-risk-text">Шанс облавы: 2%</div>
-                    </div>
+        <div class="goal-container" onclick="switchTab('podolsk')">
+            <div class="goal-header">
+                <span>🏆 ЦЕЛЬ: ВЫКУПИТЬ ПОДОЛЬСК</span>
+                <span class="mono val-amber" id="ui-goal-pct">0.2%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="ui-goal-bar"></div>
+            </div>
+        </div>
+    </header>
 
-                    <button class="btn-main" onclick="clickESIM()" style="border-width:2px; font-size:0.9rem;">⚡ РЕГАТЬ eSIM (+10 ₽)</button>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                        <button class="btn-main" onclick="buySims(100, 500)" style="font-size:0.7rem; border-color:#0aa; color:#0cc;">📦 100 SIM<br>(500 ₽)</button>
-                        <button class="btn-main" onclick="buySims(1000, 4000)" style="font-size:0.7rem; border-color:#0aa; color:#0cc;">🚚 1000 SIM<br>(4,000 ₽)</button>
-                    </div>
-
-                    <div style="font-size:0.7rem; color:#666; text-align:center; margin-top:5px;">МЕНЮ УПРАВЛЕНИЯ:</div>
-                    <div class="nav-grid">
-                        <button class="btn-nav active" id="nav-map" onclick="navView('map')">🌍 Точки</button>
-                        <button class="btn-nav" id="nav-contracts" onclick="navView('contracts')">🏦 Тарифы</button>
-                        <button class="btn-nav" id="nav-empire" onclick="navView('empire')">🏢 Бизнесы</button>
-                        <button class="btn-nav" id="nav-realty" onclick="navView('realty')">🛒 Недвижка</button>
-                    </div>
+    <!-- MAIN WORKSPACE -->
+    <main class="workspace">
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar-left">
+            <div class="nav-tabs">
+                <div class="nav-tab active" id="tab-btn-drops" onclick="switchTab('drops')">
+                    👥 АНКЕТЫ
+                    <span class="badge-count" id="badge-candidates">4</span>
                 </div>
-
-                <div class="tycoon-right" id="t-view-container"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- APP 2: DARKNET -->
-    <div id="app-upgrades" class="window">
-        <div class="window-header"><span>🕶️ Darknet Форум</span><button class="close-btn" onclick="closeWindow('app-upgrades')">X</button></div>
-        <div class="window-content">
-            <h3 style="color:var(--secondary); margin-bottom:10px;">АПГРЕЙДЫ И ЗАЩИТА</h3>
-            <div style="display:flex; flex-direction:column; gap:10px;" id="upgrades-list"></div>
-        </div>
-    </div>
-
-    <!-- APP 3: CRYPTO MARKET -->
-    <div id="app-crypto" class="window">
-        <div class="window-header"><span>🪙 БИРЖА $KURCH (ЖИВОЙ РЫНОК)</span><button class="close-btn" onclick="closeWindow('app-crypto')">X</button></div>
-        <div class="window-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
-                <div>КУРС: <strong id="cr-price" style="font-size:1.35rem; color:var(--secondary);">100 ₽</strong> <span id="cr-delta" style="font-size:0.85rem;">(0%)</span></div>
-                <div>БАЛАНС: <strong id="cr-hold" style="font-size:1.2rem; color:var(--purple);">0 $KURCH</strong> <small id="cr-val" style="color:#888;">(0 ₽)</small></div>
-            </div>
-            <canvas id="crypto-canvas" width="650" height="200"></canvas>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-top:6px;">
-                <button class="btn-main" onclick="tradeCrypto('buy', 1)">КУПИТЬ 1 шт</button>
-                <button class="btn-main" onclick="tradeCrypto('buy', 10)">КУПИТЬ 10 шт</button>
-                <button class="btn-main" onclick="tradeCrypto('buy_max', 0)">КУПИТЬ НА ВСЁ</button>
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-top:6px;">
-                <button class="btn-main" style="border-color:var(--warn); color:var(--warn);" onclick="tradeCrypto('sell', 1)">ПРОДАТЬ 1 шт</button>
-                <button class="btn-main" style="border-color:var(--warn); color:var(--warn);" onclick="tradeCrypto('sell', 10)">ПРОДАТЬ 10 шт</button>
-                <button class="btn-main" style="border-color:var(--warn); color:var(--warn);" onclick="tradeCrypto('sell_all', 0)">ПРОДАТЬ ВСЁ</button>
-            </div>
-            <p style="font-size:0.75rem; color:#777; text-align:center; margin-top:6px;">> График обновляется каждую секунду. Покупай на просадках, продавай на пиках!</p>
-        </div>
-    </div>
-
-    <!-- APP 4: DRONES -->
-    <div id="app-drone" class="window">
-        <div class="window-header"><span>🚁 ДОСТАВКА КОНТРАБАНДЫ</span><button class="close-btn" onclick="closeWindow('app-drone')">X</button></div>
-        <div class="window-content">
-            <p style="font-size:0.85rem; color:#aaa; margin-bottom:15px;">Полеты дронов через периметр СИЗО №3.</p>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <div class="apt-card" style="cursor:default;">
-                    <div><strong style="color:var(--primary)">Мелкий груз</strong><br><small>Шанс: 80% | +100k ₽, +300 SIM</small></div>
-                    <button class="btn-main" style="width:120px;" onclick="flyDrone(20000, 0.8, 100000, 300)">Лететь (20k)</button>
+                <div class="nav-tab" id="tab-btn-team" onclick="switchTab('team')">
+                    🏠 ШТАТ
                 </div>
-                <div class="apt-card" style="cursor:default;">
-                    <div><strong style="color:var(--secondary)">Крупный груз</strong><br><small>Шанс: 55% | +800k ₽</small></div>
-                    <button class="btn-main" style="width:120px;" onclick="flyDrone(120000, 0.55, 800000, 0)">Лететь (120k)</button>
+                <div class="nav-tab" id="tab-btn-sportiki" onclick="switchTab('sportiki')">
+                    🥊 СПОРТИКИ
+                    <span class="badge-count" id="badge-robberies" style="display:none;">0</span>
+                </div>
+                <div class="nav-tab" id="tab-btn-podolsk" onclick="switchTab('podolsk')">
+                    🏙️ ПОДОЛЬСК
                 </div>
             </div>
-            <div id="drone-log" style="border:1px solid #333; padding:10px; background:#000; margin-top:10px; min-height:60px; font-size:0.8rem; color:var(--warn);">Ожидание...</div>
-        </div>
-    </div>
 
-    <!-- MODAL: FSB RAID & RANSOM -->
-    <div id="modal-raid" class="modal-screen">
-        <div class="raid-box">
-            <h1 style="color:var(--danger); margin-bottom:10px;">🚨 ОБЛАВА ФСБ И ПОЛИЦИИ! 🚨</h1>
-            <p style="color:#fff; margin-bottom:15px;" id="raid-msg">Ваши SIM-боксы в Подольске были вычислены силовиками! Оборудование опечатано.</p>
-            <div style="background:#000; border:1px solid var(--danger); padding:12px; margin-bottom:15px; color:var(--warn);" id="ransom-info">
-                Шанс откупиться (20%): Успех! Сумма взятки: 15,000 ₽.
+            <!-- TAB 1: HR CANDIDATES -->
+            <div class="tab-panel active" id="panel-drops">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div>
+                        <h3 style="font-size:14px;">База резюме дропов</h3>
+                        <p style="font-size:11px; color:var(--text-muted);">Изучай признаки перед наймом на квартиру</p>
+                    </div>
+                    <button class="btn btn-outline" style="width:auto; padding:6px 10px; font-size:11px;" onclick="refreshCandidates()">
+                        🔄 Обновить (1 500 ₽)
+                    </button>
+                </div>
+                <div id="candidates-list"></div>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;" id="raid-buttons">
-                <button class="btn-main" style="background:#003300; border-color:#00ff41;" onclick="payRansom()">💸 ДАТЬ ВЗЯТКУ</button>
-                <button class="btn-main" style="background:#330000; border-color:#ff003c;" onclick="failRansom()">УЕХАТЬ В СИЗО №3</button>
+
+            <!-- TAB 2: HIRED DROPS -->
+            <div class="tab-panel" id="panel-team">
+                <h3 style="font-size:14px; margin-bottom:4px;">Наши дропы и квартиры</h3>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">Нажми на квартиру, чтобы показать её на карте Подольска</p>
+                <div id="team-list"></div>
             </div>
-        </div>
-    </div>
 
-    <!-- TASKBAR -->
-    <div class="taskbar">
-        <button class="start-btn" onclick="openWindow('app-tycoon')">OlegOS v9.1</button>
-        <span id="log-ticker" style="font-size:0.75rem; color:#0a0; white-space:nowrap; overflow:hidden; flex-grow:1; margin:0 10px;">> Система запущена... Цены сбалансированы.</span>
-        <div class="clock" id="clock">00:00:00</div>
-    </div>
+            <!-- TAB 3: SPORTIKI -->
+            <div class="tab-panel" id="panel-sportiki">
+                <div class="card" style="border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.06);">
+                    <div class="card-title" style="color:#f87171; margin-bottom:4px;">🥊 Бригада «Подольские Спортики»</div>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+                        Если неблагонадёжный дроп (наркоман, лудоман, алкаш) вынес аппаратуру с квартиры, закажи на него спортиков. Пацаны найдут его и вернут <b>50% стоимости всех украденных SIM-боксов</b> в кассу.
+                    </p>
+                </div>
+                <h4 style="font-size:12px; margin: 14px 0 8px; text-transform:uppercase; color:var(--text-muted);">Активные кражи оборудования</h4>
+                <div id="robberies-list"></div>
+            </div>
 
-    <!-- EPIC ENDING -->
-    <div id="epic-ending"></div>
+            <!-- TAB 4: BUYING PODOLSK -->
+            <div class="tab-panel" id="panel-podolsk">
+                <div class="card" style="background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(16,185,129,0.12)); border-color: var(--accent-amber);">
+                    <div class="card-title" style="color:var(--accent-amber);">👑 Выкуп города Подольск</div>
+                    <p style="font-size:11px; color:var(--text-muted); margin-top:4px; line-height:1.4;">
+                        Скупай районы и стратегические объекты Подольска на доходы с SIM-боксов. Когда выкупишь все 7 объектов — город полностью твой!
+                    </p>
+                </div>
+                <div id="districts-list"></div>
+            </div>
+
+            <!-- TERMINAL LOG -->
+            <div class="log-box mono" id="terminal-log"></div>
+        </aside>
+
+        <!-- CENTER INTERACTIVE MAP -->
+        <section class="map-wrapper">
+            <div class="map-hud-top">
+                <div class="hud-controls">
+                    <button class="hud-btn" onclick="generateMorePodolskHouses()">
+                        🏘️ +30 домов Подольска
+                    </button>
+                    <button class="hud-btn active-mode" onclick="toggleClickAnyHouse()" id="btn-anyhouse">
+                        🎯 Трейсер зданий (только дома): ВКЛ
+                    </button>
+                    <button class="hud-btn" onclick="centerPodolsk()">
+                        📍 Центр Подольска
+                    </button>
+                    <button class="hud-btn" onclick="cycleMapStyle()" id="btn-map-style">
+                        🗺️ Карта: Тёмная (Все дома)
+                    </button>
+                </div>
+                <div class="hud-controls">
+                    <button class="hud-btn" onclick="saveGameManual()">💾 Сохранить</button>
+                    <button class="hud-btn" onclick="resetGame()" style="color:#f87171;">🗑️ Сброс</button>
+                </div>
+            </div>
+
+            <div id="podolsk-map"></div>
+
+            <div class="map-legend">
+                <div class="legend-item"><span class="dot" style="background:#64748b;"></span> Свободный дом</div>
+                <div class="legend-item"><span class="dot" style="background:#f59e0b;"></span> Куплена квартира</div>
+                <div class="legend-item"><span class="dot" style="background:#10b981;"></span> Работают SIM-боксы</div>
+                <div class="legend-item"><span class="dot" style="background:#ef4444;"></span> Аппаратура украдена!</div>
+            </div>
+        </section>
+
+        <!-- RIGHT SIDEBAR: APARTMENT & SIMBOX INSPECTOR -->
+        <aside class="sidebar-right">
+            <div class="inspector-header">
+                <div style="font-size:10px; color:var(--accent-green); text-transform:uppercase; letter-spacing:1px;" class="mono">ИНСПЕКТОР ОБЪЕКТА НЕДВИЖИМОСТИ</div>
+                <h2 style="font-size:16px; margin-top:4px;" id="insp-title">Выбери дом на карте Подольска</h2>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;" id="insp-subtitle">Кликни по любому маркеру или зданию на карте</div>
+            </div>
+            <div class="inspector-body" id="inspector-content"></div>
+        </aside>
+    </main>
+
+    <div class="toast-container" id="toast-container"></div>
 
     <script>
-        // --- BASE OS ---
-        let topZ = 100;
-        window.openWindow = id => { let el = document.getElementById(id); if(el){ el.style.display='flex'; el.style.zIndex=++topZ; } };
-        window.closeWindow = id => { let el = document.getElementById(id); if(el) el.style.display='none'; };
-        
-        document.querySelectorAll('.window').forEach(w => {
-            w.onmousedown = () => w.style.zIndex = ++topZ;
-            let h = w.querySelector('.window-header');
-            if(h) {
-                h.onmousedown = e => {
-                    if(window.innerWidth <= 820) return;
-                    e.preventDefault(); let p3=e.clientX, p4=e.clientY;
-                    document.onmouseup = () => { document.onmouseup=null; document.onmousemove=null; };
-                    document.onmousemove = ev => {
-                        ev.preventDefault();
-                        w.style.top = (w.offsetTop - (p4 - ev.clientY)) + "px";
-                        w.style.left = (w.offsetLeft - (p3 - ev.clientX)) + "px";
-                        p3=ev.clientX; p4=ev.clientY;
-                    };
-                };
-            }
-        });
+        // =========================================================================
+        // 1. ДАННЫЕ: ПРИЗНАКИ ДРОПОВ, ОБОРУДОВАНИЕ, РАЙОНЫ ПОДОЛЬСКА
+        // =========================================================================
+        const SIMBOX_MODELS = [
+            { id: 'sb_8', name: 'GoIP-8 GSM Шлюз', cost: 12000, income: 180, desc: 'Базовый 8-канальный симбокс на 8 SIM-карт' },
+            { id: 'sb_32', name: 'SimBank Pro 32-Port', cost: 42000, income: 720, desc: 'Промышленная стойка с авто-сменой IMEI' },
+            { id: 'sb_128', name: 'OlegCore Matrix 128-LTE', cost: 145000, income: 2800, desc: 'Топовый кластер с жидкостным охлаждением' }
+        ];
 
-        setInterval(() => { let c=document.getElementById('clock'); if(c) c.innerText=new Date().toLocaleTimeString(); }, 1000);
-        function logMsg(msg) { let t = document.getElementById('log-ticker'); if(t) t.innerText = `> ${msg}`; }
+        const GOOD_TRAITS = [
+            { name: 'Сыч-домосед', risk: -12, speed: 1.15, desc: 'Не выходит из квартиры месяцами, вовремя меняет симки' },
+            { name: 'Трезвенник (ЗОЖ)', risk: -15, speed: 1.1, desc: 'Никаких пьянок на хате и левых гостей' },
+            { name: 'Бывший эникейщик', risk: -8, speed: 1.25, desc: 'Сам перепрошивает модемы и чинит порты' },
+            { name: 'Параноик', risk: -14, speed: 1.05, desc: 'Заклеивает глазок, никому не открывает дверь' },
+            { name: 'Ответственный', risk: -10, speed: 1.15, desc: 'Ведёт табличку отработанных SIM-карт в Excel' }
+        ];
 
-        // --- BALANCED ECONOMY & DAYS ---
-        const UDO_GOAL = 10000000;
-        const DAY_DURATION_SEC = 300; // 5 минут на день
+        const BAD_TRAITS = [
+            { name: 'Наркоман (Солевой)', risk: +42, speed: 0.7, desc: 'ОПАСНО: Вынесет симбоксы в ломбард при первой ломке!' },
+            { name: 'Хронический алкоголик', risk: +28, speed: 0.75, desc: 'Уходит в запои, может пропить казённую аппаратуру' },
+            { name: 'Лудоман (Ставки/Казино)', risk: +35, speed: 0.9, desc: 'Сливает всё на экспрессах, украдёт оборудование ради отыгрыша' },
+            { name: 'Долги в 15 МФО', risk: +24, speed: 0.95, desc: 'Коллекторы звонят каждые 5 минут, большой соблазн кинуть' },
+            { name: 'Мутный «Темщик»', risk: +20, speed: 1.0, desc: 'Постоянно ищет, как перепродать чужие симбоксы налево' },
+            { name: 'Болтливый в чатах', risk: +15, speed: 0.85, desc: 'Хвастается фотками симбоксов в пабликах Подольска' }
+        ];
 
-        let game = {
-            bal: 1200, inc: 0, sims: 50, day: 1, dayTime: 0,
-            view: 'map', activeApt: 0, tariff: 'white',
-            upgrades: {
-                vpn: { name: 'Hardware VPN (Меньше износ)', cost: 45000, owned: false, desc: 'Износ симок в 2 раза ниже' },
-                bunker: { name: 'Фольгированные стены (-Шанс облавы)', cost: 120000, owned: false, desc: 'Рост шанса облавы вдвое медленнее' },
-                auto_rep: { name: 'Дроны авто-замены симок', cost: 350000, owned: false, desc: 'Дроны сами меняют сгоревшие симки со склада' }
-            },
-            tariffs: {
-                white: { name: 'Белый (Авито/Доставки)', rate: 1.0, burn: 0.002, desc: '1.0 ₽/сек с SIM. Надежно и стабильно.' },
-                grey:  { name: 'Серый (Арбитраж/Крипто)', rate: 3.5, burn: 0.008, desc: '3.5 ₽/сек с SIM. Оптимальный выбор.' },
-                black: { name: 'Черный (Банки/Схемы)', rate: 12.0, burn: 0.03, desc: '12.0 ₽/сек с SIM! Высокий износ, максимальный куш!' }
-            },
-            apts: [
-                { id: 0, name: "Подвал (Подольск)", slots: 4, temp: 24, turbo: false, boxes: [{bad:0, total:32, cooler:false}] }
+        const NEUTRAL_TRAITS = [
+            { name: 'Любит доширак', risk: 0, speed: 1.0, desc: 'Питается исключительно лапшой быстрого приготовления' },
+            { name: 'Фанат ФК «Витязь»', risk: +2, speed: 1.05, desc: 'Местный подольский патриот' },
+            { name: 'Спит в худи', risk: -2, speed: 1.0, desc: 'Экономит на отоплении' }
+        ];
+
+        const FIRST_NAMES = ['Артём', 'Дмитрий', 'Кирилл', 'Максим', 'Влад', 'Руслан', 'Денис', 'Игорь', 'Антон', 'Никита', 'Стас', 'Жора', 'Вадик', 'Толик'];
+        const LAST_NAMES = ['Хмурый', 'Кабан', 'Шустрый', 'Подольский', 'Силикатный', 'Гвоздь', 'Питон', 'Кислый', 'Батон', 'Крот', 'Малой', 'Седой', 'Фикса'];
+
+        const INITIAL_BUILDINGS = [
+            { id: 'b_start', address: 'ул. Кирова, д. 42 (Стартовая хата)', district: 'Центральный', lat: 55.4265, lng: 37.5378, price: 35000, owned: true, slots: ['sb_8', null, null, null], dropId: 'drop_sasha', robbed: false, stolenValue: 0 },
+            { id: 'b_1', address: 'Революционный проспект, д. 34/29', district: 'Центральный', lat: 55.4335, lng: 37.5482, price: 32000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_2', address: 'проспект Ленина, д. 107/49', district: 'Центральный', lat: 55.4368, lng: 37.5450, price: 38000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_3', address: 'ул. Большая Серпуховская, д. 40', district: 'Межшоссейный', lat: 55.4195, lng: 37.5542, price: 29000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_4', address: 'ул. Свердлова, д. 28', district: 'Центральный', lat: 55.4242, lng: 37.5435, price: 34000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_5', address: 'ул. Юбилейная, д. 11', district: 'Юбилейный', lat: 55.4170, lng: 37.5165, price: 36000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_6', address: 'ул. Академика Доллежаля, д. 19', district: 'Кузнечики', lat: 55.4112, lng: 37.4955, price: 42000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_7', address: 'ул. Генерала Стрельбицкого, д. 7', district: 'Кузнечики', lat: 55.4078, lng: 37.4998, price: 41000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_8', address: 'бульвар 65-летия Победы, д. 14', district: 'Кузнечики', lat: 55.4055, lng: 37.4882, price: 45000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_9', address: 'ул. Комсомольская, д. 61', district: 'Центральный', lat: 55.4292, lng: 37.5528, price: 31000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_10', address: 'ул. Рабочая, д. 13', district: 'Парковый', lat: 55.4320, lng: 37.5625, price: 28000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_11', address: 'ул. Клемента Готвальда, д. 6В', district: 'Межшоссейный', lat: 55.4215, lng: 37.5405, price: 33000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_12', address: 'ул. Чистова, д. 11/8', district: 'Залинейный', lat: 55.4302, lng: 37.5712, price: 26000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_13', address: 'ул. Машиностроителей, д. 24', district: 'Южный', lat: 55.4062, lng: 37.5685, price: 27000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_14', address: 'ул. Правды, д. 22', district: 'Южный', lat: 55.4038, lng: 37.5592, price: 27500, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_15', address: 'ул. Пионерская, д. 15', district: 'Шепчинки', lat: 55.4125, lng: 37.5475, price: 29500, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_16', address: 'ул. Ватутина, д. 54', district: 'Шепчинки', lat: 55.4095, lng: 37.5390, price: 30000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_17', address: 'ул. Колхозная, д. 18', district: 'Красная Горка', lat: 55.4445, lng: 37.5382, price: 31500, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_18', address: 'проспект Юных Ленинцев, д. 38', district: 'Силикатная', lat: 55.4622, lng: 37.5535, price: 34000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_19', address: 'ул. Тепличная, д. 7', district: 'Силикатная', lat: 55.4565, lng: 37.5605, price: 33500, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_20', address: 'ул. Ленинградская, д. 16', district: 'Юбилейный', lat: 55.4148, lng: 37.5238, price: 35000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_21', address: 'ул. 43-й Армии, д. 19', district: 'Кузнечики', lat: 55.4152, lng: 37.5082, price: 39000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_22', address: 'ул. Веллинга, д. 14', district: 'Зелёновский', lat: 55.4342, lng: 37.5322, price: 32500, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_23', address: 'ул. Литейная, д. 23/7', district: 'Ивановское', lat: 55.4310, lng: 37.5210, price: 33000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 },
+            { id: 'b_24', address: 'ул. Народная, д. 26', district: 'Ивановское', lat: 55.4258, lng: 37.5262, price: 31000, owned: false, slots: [null, null, null, null], dropId: null, robbed: false, stolenValue: 0 }
+        ];
+
+        const PODOLSK_DISTRICTS = [
+            { id: 'd_1', name: 'Вокзал и станция МЦД «Подольск»', cost: 150000, bought: false, bonus: 'Пассивный приток +400 ₽/с' },
+            { id: 'd_2', name: 'Микрорайон «Силикатная» и Промзона', cost: 350000, bought: false, bonus: 'Пассивный приток +900 ₽/с' },
+            { id: 'd_3', name: 'Микрорайон «Шепчинки» и «Красная Горка»', cost: 750000, bought: false, bonus: 'Пассивный приток +2 000 ₽/с' },
+            { id: 'd_4', name: 'Все высотки района «Кузнечики»', cost: 1600000, bought: false, bonus: 'Пассивный приток +4 500 ₽/с' },
+            { id: 'd_5', name: 'Ледовый дворец «Витязь» и Парк Талалихина', cost: 3200000, bought: false, bonus: 'Пассивный приток +9 000 ₽/с' },
+            { id: 'd_6', name: 'Подольские телеком-вышки и провайдеры', cost: 6000000, bought: false, bonus: 'Нулевой пинг, +18 000 ₽/с' },
+            { id: 'd_7', name: 'Здание Администрации Подольска (ул. Кирова, 4)', cost: 12000000, bought: false, bonus: 'ПОЛНЫЙ ВЫКУП ПОДОЛЬСКА!' }
+        ];
+
+        // =========================================================================
+        // 2. ИГРОВОЕ СОСТОЯНИЕ (STATE)
+        // =========================================================================
+        let state = {
+            balance: 35000,
+            selectedBuildingId: 'b_start',
+            clickAnyHouseMode: true,
+            buildings: JSON.parse(JSON.stringify(INITIAL_BUILDINGS)),
+            drops: [
+                {
+                    id: 'drop_sasha',
+                    name: 'Саша Улыбка',
+                    role: 'Друг детства • Первый дроп',
+                    age: 22,
+                    avatar: '😁',
+                    traits: [
+                        { name: 'Кент основателя (Верный друг)', risk: -100, speed: 1.35, type: 'good', desc: 'Никогда не украдёт аппаратуру!' },
+                        { name: 'Фирменная улыбка', risk: 0, speed: 1.1, type: 'good', desc: 'Радует соседей и консьержку' }
+                    ],
+                    risk: 0,
+                    speed: 1.45,
+                    salary: 0,
+                    assignedBuildingId: 'b_start',
+                    isStarter: true
+                }
             ],
-            realty: [
-                { id: 1, name: "Однушка (Серпухов)", price: 20000, slots: 8 },
-                { id: 2, name: "Гараж (Бутово)", price: 75000, slots: 16 },
-                { id: 3, name: "Склад (Чехов)", price: 250000, slots: 32 }
-            ],
-            businesses: [
-                { id: 'shawarma', name: 'Шаурмичная у МЦД', cost: 15000, count: 0, inc: 1200, desc: '+1,200 ₽/с (Пассив)' },
-                { id: 'tower', name: 'Вышка связи 5G', cost: 400000, count: 0, inc: 45000, desc: '+45,000 ₽/с (Сверхдоход)' }
-            ]
+            candidates: [],
+            robberies: [],
+            districts: JSON.parse(JSON.stringify(PODOLSK_DISTRICTS))
         };
 
-        let cryptoData = { price: 100, holdings: 0, history: Array(30).fill(100) };
+        // =========================================================================
+        // 3. КАРТА ПОДОЛЬСКА (ОНЛАЙН БЕЗ 403 + ВСТРОЕННЫЙ ВЕКТОРНЫЙ СЛОЙ)
+        // =========================================================================
+        let map;
+        let markerLayer;
+        let vectorCityLayer;
+        let currentTileLayer = null;
+        let mapStyleIndex = 0;
 
-        function saveGame() {
+        // Список серверов, которые НЕ блокируют локальный запуск file:///C:/... (без 403 и без API ключей)
+        const MAP_PROVIDERS = [
+            {
+                name: '🗺️ Карта: Тёмная (Все дома)',
+                url: 'https://mt1.google.com/vt/lyrs=m&hl=ru&x={x}&y={y}&z={z}',
+                dark: true
+            },
+            {
+                name: '☀️ Карта: Светлая (Все дома)',
+                url: 'https://mt1.google.com/vt/lyrs=m&hl=ru&x={x}&y={y}&z={z}',
+                dark: false
+            },
+            {
+                name: '🛰️ Карта: Спутник + Дома',
+                url: 'https://mt1.google.com/vt/lyrs=y&hl=ru&x={x}&y={y}&z={z}',
+                dark: false
+            },
+            {
+                name: '🛰️ Карта: Спутник Esri',
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                dark: false
+            },
+            {
+                name: '🌐 Карта: Кибер-Радар (Оффлайн)',
+                url: null,
+                dark: false
+            }
+        ];
+
+        function applyMapProvider(index) {
+            const mapEl = document.getElementById('podolsk-map');
+            const btn = document.getElementById('btn-map-style');
+            const provider = MAP_PROVIDERS[index];
+
+            if (currentTileLayer) {
+                map.removeLayer(currentTileLayer);
+                currentTileLayer = null;
+            }
+
+            if (provider.dark) {
+                mapEl.classList.add('dark-tiles');
+            } else {
+                mapEl.classList.remove('dark-tiles');
+            }
+
+            if (provider.url) {
+                currentTileLayer = L.tileLayer(provider.url, {
+                    maxZoom: 20,
+                    attribution: 'Podolsk Syndicate Tactical Map'
+                }).addTo(map);
+            }
+
+            if (btn) btn.innerText = provider.name;
+        }
+
+        function cycleMapStyle() {
+            mapStyleIndex = (mapStyleIndex + 1) % MAP_PROVIDERS.length;
+            applyMapProvider(mapStyleIndex);
+        }
+
+        // Отрисовка встроенной векторной сетки Подольска (река Пахра, магистрали, районы, кварталы),
+        // чтобы карта всегда была видна даже без интернета!
+        function drawBuiltInPodolskVectorGrid() {
+            vectorCityLayer.clearLayers();
+
+            // Река Пахра
+            const pakhraRiver = [
+                [55.4480, 37.4950], [55.4435, 37.5150], [55.4410, 37.5320],
+                [55.4395, 37.5470], [55.4375, 37.5620], [55.4345, 37.5820], [55.4390, 37.6010]
+            ];
+            L.polyline(pakhraRiver, { color: '#0284c7', weight: 10, opacity: 0.35 }).addTo(vectorCityLayer);
+
+            // Главные магистрали Подольска (Проспект Ленина / ул. Кирова / Б. Серпуховская / Юбилейная / Доллежаля)
+            const mainRoads = [
+                // Проспект Ленина -> ул. Кирова -> Варшавское шоссе
+                [[55.4650, 37.5520], [55.4450, 37.5460], [55.4355, 37.5450], [55.4265, 37.5378], [55.4150, 37.5250], [55.4020, 37.5100]],
+                // Большая Серпуховская -> Климовск
+                [[55.4355, 37.5450], [55.4280, 37.5520], [55.4180, 37.5545], [55.4000, 37.5560]],
+                // Октябрьский проспект -> Кузнечики (43-й Армии / Доллежаля)
+                [[55.4265, 37.5378], [55.4190, 37.5220], [55.4152, 37.5082], [55.4112, 37.4955], [55.4055, 37.4882]],
+                // Революционный проспект -> Вокзал Подольск -> Комсомольская
+                [[55.4342, 37.5322], [55.4335, 37.5482], [55.4315, 37.5635], [55.4302, 37.5712]]
+            ];
+            mainRoads.forEach(r => {
+                L.polyline(r, { color: '#38bdf8', weight: 2, opacity: 0.28, dashArray: '6, 6' }).addTo(vectorCityLayer);
+            });
+
+            // Линия МЦД-2 (Курское направление ЖД через Подольск)
+            const mcdRailway = [
+                [55.4700, 37.5580], [55.4520, 37.5610], [55.4320, 37.5655], [55.4120, 37.5620], [55.3950, 37.5590]
+            ];
+            L.polyline(mcdRailway, { color: '#f59e0b', weight: 2, opacity: 0.3, dashArray: '4, 8' }).addTo(vectorCityLayer);
+
+            // Подписи районов Подольска на карте
+            const districtLabels = [
+                { name: 'ЦЕНТРАЛЬНЫЙ', lat: 55.4295, lng: 37.5430 },
+                { name: 'КУЗНЕЧИКИ', lat: 55.4105, lng: 37.4960 },
+                { name: 'ЮБИЛЕЙНЫЙ', lat: 55.4175, lng: 37.5200 },
+                { name: 'ШЕПЧИНКИ', lat: 55.4115, lng: 37.5440 },
+                { name: 'МЕЖШОССЕЙНЫЙ', lat: 55.4215, lng: 37.5480 },
+                { name: 'ПАРКОВЫЙ', lat: 55.4335, lng: 37.5610 },
+                { name: 'ЗАЛИНЕЙНЫЙ', lat: 55.4310, lng: 37.5750 },
+                { name: 'КРАСНАЯ ГОРКА', lat: 55.4455, lng: 37.5380 },
+                { name: 'СИЛИКАТНАЯ', lat: 55.4600, lng: 37.5560 },
+                { name: 'ИВАНОВСКОЕ', lat: 55.4290, lng: 37.5220 },
+                { name: 'ЮЖНЫЙ', lat: 55.4050, lng: 37.5640 }
+            ];
+            districtLabels.forEach(dl => {
+                const icon = L.divIcon({
+                    className: 'district-label',
+                    html: dl.name,
+                    iconSize: [120, 20],
+                    iconAnchor: [60, 10]
+                });
+                L.marker([dl.lat, dl.lng], { icon, interactive: false }).addTo(vectorCityLayer);
+            });
+        }
+
+        // =========================================================================
+        // ГИБРИДНЫЙ ТРЕЙСЕР ЗДАНИЙ (ПО ЦВЕТУ ПИКСЕЛЯ КАРТЫ + КОНТУРЫ ДОМОВ)
+        // Запрещает покупку/аренду на дорогах, во дворах, лесах, парках и реках.
+        // =========================================================================
+        const tileImageCache = {};
+        let tracedFootprintsLayer;
+        const cachedBuildingPolygons = []; // Полигоны реальных домов Подольска
+
+        // Проверка попадания точки (lat, lng) внутрь многоугольника крыши здания (Ray-Casting)
+        function isPointInPolygon(lat, lng, polygonCoords) {
+            let inside = false;
+            for (let i = 0, j = polygonCoords.length - 1; i < polygonCoords.length; j = i++) {
+                const xi = polygonCoords[i][0], yi = polygonCoords[i][1];
+                const xj = polygonCoords[j][0], yj = polygonCoords[j][1];
+                const intersect = ((yi > lng) !== (yj > lng)) &&
+                    (lat < (xj - xi) * (lng - yi) / ((yj - yi) || 1e-12) + xi);
+                if (intersect) inside = !inside;
+            }
+            return inside;
+        }
+
+        // Авто-трейсинг реальных контуров всех зданий в видимой части Подольска
+        let lastOverpassBoundsKey = '';
+        async function autoTraceVisibleBuildings() {
+            if (!map || map.getZoom() < 15) return;
+            const b = map.getBounds();
+            const s = b.getSouth().toFixed(3), w = b.getWest().toFixed(3), n = b.getNorth().toFixed(3), e = b.getEast().toFixed(3);
+            const boundsKey = `${s}_${w}_${n}_${e}`;
+            if (boundsKey === lastOverpassBoundsKey) return;
+            lastOverpassBoundsKey = boundsKey;
+
+            const query = `[out:json][timeout:8];way["building"](${s},${w},${n},${e});out geom 250;`;
+            const endpoints = [
+                'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+                'https://overpass-api.de/api/interpreter'
+            ];
+
+            for (const ep of endpoints) {
+                try {
+                    const res = await fetch(ep, { method: 'POST', body: query });
+                    if (!res.ok) continue;
+                    const data = await res.json();
+                    if (data && data.elements) {
+                        data.elements.forEach(el => {
+                            if (!el.geometry || el.geometry.length < 3) return;
+                            if (cachedBuildingPolygons.some(p => p.id === el.id)) return;
+
+                            const coords = el.geometry.map(pt => [pt.lat, pt.lon]);
+                            let sumLat = 0, sumLng = 0;
+                            coords.forEach(c => { sumLat += c[0]; sumLng += c[1]; });
+                            const centerLat = sumLat / coords.length;
+                            const centerLng = sumLng / coords.length;
+
+                            const street = (el.tags && el.tags['addr:street']) ? el.tags['addr:street'] : null;
+                            const num = (el.tags && el.tags['addr:housenumber']) ? el.tags['addr:housenumber'] : null;
+
+                            const polyObj = {
+                                id: el.id,
+                                coords,
+                                centerLat,
+                                centerLng,
+                                address: (street && num) ? `${street}, д. ${num}` : (street ? `${street}` : null)
+                            };
+                            cachedBuildingPolygons.push(polyObj);
+
+                            // Рисуем тонкий интерактивный контур крыши здания
+                            if (tracedFootprintsLayer) {
+                                L.polygon(coords, {
+                                    color: '#10b981',
+                                    weight: 1,
+                                    opacity: 0.28,
+                                    fillColor: '#10b981',
+                                    fillOpacity: 0.05,
+                                    interactive: false
+                                }).addTo(tracedFootprintsLayer);
+                            }
+                        });
+                        break;
+                    }
+                } catch (err) {}
+            }
+        }
+
+        // Загрузка пикселей тайла (пробуем Google Maps, затем CORS-зеркала OSM)
+        function loadTilePixelData(z, x, y) {
+            const key = `${z}_${x}_${y}`;
+            if (tileImageCache[key]) {
+                return Promise.resolve(tileImageCache[key]);
+            }
+
+            const sources = [
+                { url: `https://mt1.google.com/vt/lyrs=m&hl=ru&x=${x}&y=${y}&z=${z}`, schema: 'google' },
+                { url: `https://a.tile.openstreetmap.fr/hot/${z}/${x}/${y}.png`, schema: 'osm_hot' },
+                { url: `https://tile.openstreetmap.de/${z}/${x}/${y}.png`, schema: 'osm_de' }
+            ];
+
+            return new Promise((resolve, reject) => {
+                let idx = 0;
+                function tryNext() {
+                    if (idx >= sources.length) {
+                        reject(new Error('All CORS tile sources failed'));
+                        return;
+                    }
+                    const srcObj = sources[idx++];
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 256;
+                            canvas.height = 256;
+                            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                            ctx.drawImage(img, 0, 0);
+                            const imageData = ctx.getImageData(0, 0, 256, 256).data;
+                            const result = { data: imageData, schema: srcObj.schema };
+                            tileImageCache[key] = result;
+                            resolve(result);
+                        } catch (e) {
+                            tryNext();
+                        }
+                    };
+                    img.onerror = () => tryNext();
+                    img.src = srcObj.url;
+                }
+                tryNext();
+            });
+        }
+
+        // Классификация RGB цвета пикселя: Здание vs Дорога / Трава / Вода / Пустой двор
+        function classifyPixelRGB(r, g, b, groundBg, schema) {
+            const lum = (r + g + b) / 3;
+
+            // 1. Вода (река Пахра, водоёмы)
+            if (b - r >= 12 && b > 170) {
+                return { isBuilding: false, reason: 'Водоём / Река Пахра' };
+            }
+
+            // 2. Зелёная зона (парк, лес, газон, трава)
+            if (g - r >= 5 && g - b >= 3) {
+                return { isBuilding: false, reason: 'Парк / Газон / Лес' };
+            }
+
+            // 3. Автодорога (белая улица или жёлто-оранжевое шоссе)
+            if (r >= 251 && g >= 251 && b >= 251) {
+                return { isBuilding: false, reason: 'Проезжая часть (Дорога)' };
+            }
+            if (r >= 242 && g >= 195 && r - b >= 28) {
+                return { isBuilding: false, reason: 'Автомагистраль / Шоссе' };
+            }
+
+            if (schema === 'osm_hot' || schema === 'osm_de') {
+                // На тайлах OpenStreetMap дома имеют характерный бежево-кирпичный/коричневатый оттенок (#d9d0c9 / #e0d8d1)
+                // и темнее фона двора (#f2efe9)
+                if (lum >= 175 && lum <= 233 && (groundBg - lum >= 3.5) && (r >= g) && (g >= b - 3) && (r - b <= 26)) {
+                    return { isBuilding: true, type: 'Жилое здание (OSM)' };
+                }
+                return { isBuilding: false, reason: 'Пустой двор / Улица мимо дома' };
+            }
+
+            // Схема Google Maps (mt1.google.com/vt/lyrs=m)
+            // Коммерческое / общественное здание (тёпло-бежевая крыша)
+            if (r >= 232 && r <= 249 && g >= 218 && g <= 240 && b >= 198 && b <= 229 && (r - b >= 8) && (r - b <= 32)) {
+                return { isBuilding: true, type: 'Здание' };
+            }
+
+            // Обычное здание (серо-стальная крыша и контур стен темнее фона квартала)
+            if (lum >= 182 && lum <= 239.2 && (groundBg - lum >= 3.0) && Math.abs(r - g) <= 10 && Math.abs(g - b) <= 12) {
+                return { isBuilding: true, type: 'Жилой дом' };
+            }
+
+            return { isBuilding: false, reason: 'Пустой двор / Земля мимо здания' };
+        }
+
+        async function checkIfClickedOnBuilding(latlng) {
+            const zoom = map.getZoom();
+            const { lat, lng } = latlng;
+
+            // 1. Сначала проверяем точное попадание в уже оттрейшенные векторные контуры крыш домов
+            for (const poly of cachedBuildingPolygons) {
+                if (isPointInPolygon(lat, lng, poly.coords)) {
+                    return {
+                        ok: true,
+                        latlng: { lat: poly.centerLat, lng: poly.centerLng },
+                        address: poly.address,
+                        rgb: [218, 220, 224],
+                        method: 'Контур здания'
+                    };
+                }
+            }
+
+            // 2. Если зум слишком мелкий (< 16), отдельные дома слишком малы для точного клика по цвету
+            if (zoom < 16) {
+                return {
+                    ok: false,
+                    reason: 'Слишком далеко! Приблизь карту колёсиком (Zoom 16+), чтобы видеть крыши домов',
+                    rgb: [15, 23, 42]
+                };
+            }
+
+            // 3. Трейсим здание по цвету пикселя на тайле карты (Canvas Pixel Color Tracer)
+            const worldPt = map.project(latlng, zoom).floor();
+            const tileX = Math.floor(worldPt.x / 256);
+            const tileY = Math.floor(worldPt.y / 256);
+            const px = ((worldPt.x % 256) + 256) % 256;
+            const py = ((worldPt.y % 256) + 256) % 256;
+
             try {
-                localStorage.setItem('oleg_save_v9', JSON.stringify(game));
-                localStorage.setItem('oleg_crypto_v9', JSON.stringify(cryptoData));
-            } catch(e) {}
+                const tileObj = await loadTilePixelData(zoom, tileX, tileY);
+                const data = tileObj.data;
+                const schema = tileObj.schema;
+
+                // Вычисляем базовый цвет фона пустого двора/квартала на этом тайле
+                let bgSum = 0, bgCount = 0;
+                for (let i = 0; i < data.length; i += 64) {
+                    const r = data[i], g = data[i + 1], b = data[i + 2];
+                    const l = (r + g + b) / 3;
+                    if (l >= 237 && l <= 250.5 && Math.abs(r - b) <= 12) {
+                        bgSum += l;
+                        bgCount++;
+                    }
+                }
+                const groundBg = bgCount > 10 ? (bgSum / bgCount) : 244.5;
+
+                // Проверяем площадку 5x5 пикселей вокруг точки клика
+                let roofVotes = 0;
+                let totalValid = 0;
+                let sampleR = 0, sampleG = 0, sampleB = 0;
+                const reasonsCount = {};
+
+                for (let dy = -2; dy <= 2; dy++) {
+                    for (let dx = -2; dx <= 2; dx++) {
+                        const x = Math.min(255, Math.max(0, px + dx));
+                        const y = Math.min(255, Math.max(0, py + dy));
+                        const idx = (y * 256 + x) * 4;
+                        const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+                        const lum = (r + g + b) / 3;
+
+                        // Пропускаем тёмный шрифт подписей номеров домов поверх крыш
+                        if (lum < 175) continue;
+
+                        const res = classifyPixelRGB(r, g, b, groundBg, schema);
+                        totalValid++;
+                        if (res.isBuilding) {
+                            roofVotes++;
+                            sampleR = r; sampleG = g; sampleB = b;
+                        } else {
+                            reasonsCount[res.reason] = (reasonsCount[res.reason] || 0) + 1;
+                            if (!sampleR) { sampleR = r; sampleG = g; sampleB = b; }
+                        }
+                    }
+                }
+
+                const cIdx = (py * 256 + px) * 4;
+                const centerRGB = [data[cIdx], data[cIdx + 1], data[cIdx + 2]];
+
+                if (totalValid > 0 && roofVotes / totalValid >= 0.44) {
+                    // Пускаем лучи (Raycasting) во все 4 стороны для поиска границ крыши и центровки маркера
+                    const maxRay = 60;
+                    let leftEdge = 0, rightEdge = 0, topEdge = 0, bottomEdge = 0;
+
+                    for (let d = 1; d <= maxRay && px - d >= 0; d++) {
+                        const idx = (py * 256 + (px - d)) * 4;
+                        const c = classifyPixelRGB(data[idx], data[idx+1], data[idx+2], groundBg, schema);
+                        if (!c.isBuilding && (data[idx]+data[idx+1]+data[idx+2])/3 >= 175) { leftEdge = d; break; }
+                    }
+                    for (let d = 1; d <= maxRay && px + d < 256; d++) {
+                        const idx = (py * 256 + (px + d)) * 4;
+                        const c = classifyPixelRGB(data[idx], data[idx+1], data[idx+2], groundBg, schema);
+                        if (!c.isBuilding && (data[idx]+data[idx+1]+data[idx+2])/3 >= 175) { rightEdge = d; break; }
+                    }
+                    for (let d = 1; d <= maxRay && py - d >= 0; d++) {
+                        const idx = ((py - d) * 256 + px) * 4;
+                        const c = classifyPixelRGB(data[idx], data[idx+1], data[idx+2], groundBg, schema);
+                        if (!c.isBuilding && (data[idx]+data[idx+1]+data[idx+2])/3 >= 175) { topEdge = d; break; }
+                    }
+                    for (let d = 1; d <= maxRay && py + d < 256; d++) {
+                        const idx = ((py + d) * 256 + px) * 4;
+                        const c = classifyPixelRGB(data[idx], data[idx+1], data[idx+2], groundBg, schema);
+                        if (!c.isBuilding && (data[idx]+data[idx+1]+data[idx+2])/3 >= 175) { bottomEdge = d; break; }
+                    }
+
+                    let shiftX = 0, shiftY = 0;
+                    if (leftEdge > 0 && rightEdge > 0 && (leftEdge + rightEdge) < 85) {
+                        shiftX = Math.round((rightEdge - leftEdge) * 0.35);
+                    }
+                    if (topEdge > 0 && bottomEdge > 0 && (topEdge + bottomEdge) < 85) {
+                        shiftY = Math.round((bottomEdge - topEdge) * 0.35);
+                    }
+
+                    const centeredLatLng = map.unproject([worldPt.x + shiftX, worldPt.y + shiftY], zoom);
+
+                    return {
+                        ok: true,
+                        latlng: centeredLatLng,
+                        rgb: [sampleR || centerRGB[0], sampleG || centerRGB[1], sampleB || centerRGB[2]],
+                        method: 'Цветовой сканер крыши'
+                    };
+                }
+
+                // Если мы уже оттрейсили полигоны домов в этом районе и клик не попал ни в полигон, ни в цвет крыши — 100% мимо дома!
+                let mainReason = 'Пустой двор / Земля мимо здания';
+                let maxVotes = 0;
+                for (const rKey in reasonsCount) {
+                    if (reasonsCount[rKey] > maxVotes) {
+                        maxVotes = reasonsCount[rKey];
+                        mainReason = rKey;
+                    }
+                }
+
+                return {
+                    ok: false,
+                    reason: mainReason,
+                    rgb: centerRGB
+                };
+            } catch (err) {
+                // Если браузер заблокировал Canvas CORS — проверяем по базе полигонов Overpass вокруг точки клика (радиус 12м)
+                try {
+                    const q = `[out:json][timeout:4];way["building"](around:12,${lat},${lng});out center 1;`;
+                    const res = await fetch('https://maps.mail.ru/osm/tools/overpass/api/interpreter', { method: 'POST', body: q });
+                    const d = await res.json();
+                    if (d && d.elements && d.elements.length > 0) {
+                        const el = d.elements[0];
+                        return {
+                            ok: true,
+                            latlng: el.center ? { lat: el.center.lat, lng: el.center.lon } : latlng,
+                            rgb: [218, 220, 224],
+                            method: 'Радар зданий'
+                        };
+                    }
+                } catch (e2) {}
+
+                return {
+                    ok: false,
+                    reason: 'Мимо здания (Двор / Дорога / Пустырь)',
+                    rgb: [30, 41, 59]
+                };
+            }
+        }
+
+        function showRejectFeedbackOnMap(latlng, reason, rgb) {
+            const icon = L.divIcon({
+                className: '',
+                html: `<div class="reject-marker">✖</div>`,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+            const tempMarker = L.marker([latlng.lat, latlng.lng], { icon, interactive: false }).addTo(map);
+            setTimeout(() => map.removeLayer(tempMarker), 1200);
+
+            showToast(`🚫 Здесь нельзя арендовать квартиру! (${reason})`, '#ef4444');
+            logTerminal(`🚫 Отказ: точка [${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}] — не здание (${reason}).`);
+
+            const titleEl = document.getElementById('insp-title');
+            const subEl = document.getElementById('insp-subtitle');
+            const bodyEl = document.getElementById('inspector-content');
+
+            titleEl.innerText = '🚫 Здесь нельзя арендовать квартиру';
+            subEl.innerText = `Координаты: ${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)} • Здание не обнаружено`;
+
+            const hexColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+            bodyEl.innerHTML = `
+                <div class="card" style="border-color:var(--accent-red); background:rgba(239,68,68,0.08); text-align:center; padding:22px 16px;">
+                    <div style="font-size:42px; margin-bottom:10px;">🚫</div>
+                    <h3 style="font-size:15px; color:#f87171; margin-bottom:8px;">Здесь нельзя арендовать квартиру!</h3>
+                    <p style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+                        Трейсер карты определил, что вы кликнули мимо дома:<br>
+                        <b style="color:#f8fafc; font-size:13px;">«${reason}»</b>
+                    </p>
+                    <div style="display:inline-flex; align-items:center; gap:8px; background:#0f172a; border:1px solid var(--border); padding:6px 12px; border-radius:6px; font-size:11px; margin-bottom:14px;">
+                        <span style="width:14px; height:14px; border-radius:4px; background:${hexColor}; border:1px solid #fff; display:inline-block;"></span>
+                        <span class="mono">Цвет участка: RGB(${rgb[0]}, ${rgb[1]}, ${rgb[2]})</span>
+                    </div>
+                    <p style="font-size:11px; color:var(--accent-green);">
+                        💡 Наведите прицел точно на крышу любого здания на карте (Zoom 16+), чтобы купить там квартиру.
+                    </p>
+                </div>
+            `;
+        }
+
+        function initMap() {
+            map = L.map('podolsk-map', {
+                center: [55.4265, 37.5378],
+                zoom: 16,
+                zoomControl: false
+            });
+
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            vectorCityLayer = L.layerGroup().addTo(map);
+            tracedFootprintsLayer = L.layerGroup().addTo(map);
+            markerLayer = L.layerGroup().addTo(map);
+
+            applyMapProvider(0);
+            drawBuiltInPodolskVectorGrid();
+
+            // Запускаем фоновый авто-трейсинг контуров зданий при открытии и перемещении карты
+            setTimeout(autoTraceVisibleBuildings, 400);
+            map.on('moveend', () => {
+                autoTraceVisibleBuildings();
+            });
+
+            // Клик по карте: проверяем по цвету и контурам, кликнул ли игрок именно на здание!
+            map.on('click', async function(e) {
+                if (!state.clickAnyHouseMode) return;
+                const { lat, lng } = e.latlng;
+
+                // 1. Проверяем, не кликнул ли игрок по уже открытому маркеру дома
+                const existing = state.buildings.find(b => {
+                    const dLat = Math.abs(b.lat - lat);
+                    const dLng = Math.abs(b.lng - lng);
+                    return dLat < 0.00028 && dLng < 0.00028;
+                });
+
+                if (existing) {
+                    selectBuilding(existing.id);
+                    return;
+                }
+
+                // 2. Проверяем попадание в здание (по цвету крыши тайла + контурам зданий)
+                const scan = await checkIfClickedOnBuilding(e.latlng);
+                if (!scan.ok) {
+                    showRejectFeedbackOnMap(e.latlng, scan.reason, scan.rgb);
+                    return;
+                }
+
+                const finalLat = scan.latlng.lat;
+                const finalLng = scan.latlng.lng;
+
+                const existingCentered = state.buildings.find(b => {
+                    const dLat = Math.abs(b.lat - finalLat);
+                    const dLng = Math.abs(b.lng - finalLng);
+                    return dLat < 0.00028 && dLng < 0.00028;
+                });
+                if (existingCentered) {
+                    selectBuilding(existingCentered.id);
+                    return;
+                }
+
+                const newId = 'b_custom_' + Date.now();
+                const houseNum = Math.floor(Math.random() * 75) + 1;
+                const streets = [
+                    'ул. Кирова', 'Октябрьский проспект', 'ул. Свердлова', 'Красногвардейский бульвар',
+                    'ул. Гайдара', 'ул. Подольских Курсантов', 'ул. Февральская', 'ул. Индустриальная',
+                    'ул. Циолковского', 'ул. Высотная', 'ул. Чехова', 'ул. Каракозова'
+                ];
+                const street = streets[Math.floor(Math.random() * streets.length)];
+                const price = 25000 + Math.floor(Math.random() * 20) * 1000;
+
+                const newBuilding = {
+                    id: newId,
+                    address: scan.address || `${street}, д. ${houseNum}`,
+                    district: 'Подольск',
+                    lat: finalLat,
+                    lng: finalLng,
+                    price: price,
+                    owned: false,
+                    slots: [null, null, null, null],
+                    dropId: null,
+                    robbed: false,
+                    stolenValue: 0
+                };
+
+                state.buildings.push(newBuilding);
+                renderMapMarkers();
+                selectBuilding(newId);
+                showToast(`🏢 Здание подтверждено (${scan.method})! Можно покупать квартиру.`, '#10b981');
+                logTerminal(`✅ Трейсер подтвердил здание: ${newBuilding.address}. Доступна покупка квартиры.`);
+            });
+
+            renderMapMarkers();
+        }
+
+        function renderMapMarkers() {
+            if (!markerLayer) return;
+            markerLayer.clearLayers();
+
+            state.buildings.forEach(b => {
+                let statusClass = 'marker-free';
+                let iconChar = '🏢';
+                const activeSimboxes = b.slots.filter(s => s !== null).length;
+
+                if (b.robbed) {
+                    statusClass = 'marker-robbed';
+                    iconChar = '🚨';
+                } else if (b.owned && activeSimboxes > 0 && b.dropId) {
+                    statusClass = 'marker-active';
+                    iconChar = '⚡';
+                } else if (b.owned) {
+                    statusClass = 'marker-owned';
+                    iconChar = '🔑';
+                }
+
+                const icon = L.divIcon({
+                    className: '',
+                    html: `<div class="house-marker ${statusClass}" title="${b.address}">${iconChar}</div>`,
+                    iconSize: [26, 26],
+                    iconAnchor: [13, 13]
+                });
+
+                const marker = L.marker([b.lat, b.lng], { icon }).addTo(markerLayer);
+                marker.on('click', (ev) => {
+                    L.DomEvent.stopPropagation(ev);
+                    selectBuilding(b.id);
+                });
+            });
+        }
+
+        // Оттрейсить и отметить реальные здания в текущем секторе Подольска
+        async function generateMorePodolskHouses() {
+            await autoTraceVisibleBuildings();
+            const bounds = map.getBounds();
+            const streets = [
+                'ул. Кирова', 'проспект Ленина', 'Революционный проспект', 'ул. Большая Серпуховская',
+                'ул. Академика Доллежаля', 'ул. Юбилейная', 'ул. 43-й Армии', 'Октябрьский проспект',
+                'ул. Комсомольская', 'ул. Свердлова', 'ул. Рабочая', 'ул. Машиностроителей', 'ул. Веллинга'
+            ];
+
+            let added = 0;
+            const visiblePolys = cachedBuildingPolygons.filter(p =>
+                bounds.contains([p.centerLat, p.centerLng])
+            );
+
+            for (const poly of visiblePolys) {
+                if (added >= 30) break;
+                const exists = state.buildings.some(b =>
+                    Math.abs(b.lat - poly.centerLat) < 0.00035 && Math.abs(b.lng - poly.centerLng) < 0.00035
+                );
+                if (!exists) {
+                    const st = streets[Math.floor(Math.random() * streets.length)];
+                    const num = Math.floor(Math.random() * 90) + 1;
+                    state.buildings.push({
+                        id: 'b_traced_' + poly.id,
+                        address: poly.address || `${st}, д. ${num}`,
+                        district: 'Подольск',
+                        lat: poly.centerLat,
+                        lng: poly.centerLng,
+                        price: 26000 + Math.floor(Math.random() * 18) * 1000,
+                        owned: false,
+                        slots: [null, null, null, null],
+                        dropId: null,
+                        robbed: false,
+                        stolenValue: 0
+                    });
+                    added++;
+                }
+            }
+
+            renderMapMarkers();
+            if (added > 0) {
+                showToast(`🏢 Оттрейшено ${added} реальных зданий Подольска!`, '#10b981');
+                logTerminal(`🏢 Трейсер отметил ${added} реальных зданий на карте.`);
+            } else {
+                showToast(`💡 Приблизь новый квартал Подольска (Zoom 16+) и нажми снова или кликай прямо по крышам домов!`, '#3b82f6');
+            }
+        }
+
+        function toggleClickAnyHouse() {
+            state.clickAnyHouseMode = !state.clickAnyHouseMode;
+            const btn = document.getElementById('btn-anyhouse');
+            if (state.clickAnyHouseMode) {
+                btn.classList.add('active-mode');
+                btn.innerText = '🎯 Трейсер зданий (только дома): ВКЛ';
+            } else {
+                btn.classList.remove('active-mode');
+                btn.innerText = '🎯 Трейсер зданий (только дома): ВЫКЛ';
+            }
+        }
+
+        function centerPodolsk() {
+            map.setView([55.4265, 37.5378], 16);
+        }
+
+        // =========================================================================
+        // 4. ГЕНЕРАЦИЯ АНКЕТ ДРОПОВ (КАДРЫ)
+        // =========================================================================
+        function generateCandidate() {
+            const fname = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+            const lname = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+            const avatars = ['🧢', '🕶️', '🧔', '🧑', '👨‍💻', '🥷', '🚬', '🍺', '🎧'];
+            const avatar = avatars[Math.floor(Math.random() * avatars.length)];
+
+            let pickedTraits = [];
+            let baseRisk = 15;
+            let baseSpeed = 1.0;
+
+            const roll = Math.random();
+            if (roll < 0.35) {
+                const g1 = GOOD_TRAITS[Math.floor(Math.random() * GOOD_TRAITS.length)];
+                let g2 = GOOD_TRAITS[Math.floor(Math.random() * GOOD_TRAITS.length)];
+                if (g2.name === g1.name) g2 = NEUTRAL_TRAITS[0];
+                pickedTraits.push({ ...g1, type: 'good' });
+                pickedTraits.push({ ...g2, type: 'good' });
+            } else if (roll < 0.70) {
+                const g1 = GOOD_TRAITS[Math.floor(Math.random() * GOOD_TRAITS.length)];
+                const b1 = BAD_TRAITS[Math.floor(Math.random() * BAD_TRAITS.length)];
+                const n1 = NEUTRAL_TRAITS[Math.floor(Math.random() * NEUTRAL_TRAITS.length)];
+                pickedTraits.push({ ...g1, type: 'good' });
+                pickedTraits.push({ ...b1, type: 'bad' });
+                pickedTraits.push({ ...n1, type: 'neutral' });
+            } else {
+                const b1 = BAD_TRAITS[Math.floor(Math.random() * BAD_TRAITS.length)];
+                let b2 = BAD_TRAITS[Math.floor(Math.random() * BAD_TRAITS.length)];
+                pickedTraits.push({ ...b1, type: 'bad' });
+                if (b2.name !== b1.name) pickedTraits.push({ ...b2, type: 'bad' });
+            }
+
+            pickedTraits.forEach(t => {
+                baseRisk += t.risk;
+                baseSpeed *= t.speed;
+            });
+
+            const finalRisk = Math.max(2, Math.min(92, Math.round(baseRisk)));
+            const finalSpeed = Math.round(baseSpeed * 100) / 100;
+            const hireCost = Math.max(2500, Math.round((100 - finalRisk) * 120));
+
+            return {
+                id: 'cand_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
+                name: `${fname} «${lname}»`,
+                age: 19 + Math.floor(Math.random() * 20),
+                avatar,
+                traits: pickedTraits,
+                risk: finalRisk,
+                speed: finalSpeed,
+                hireCost: hireCost,
+                assignedBuildingId: null
+            };
+        }
+
+        function initCandidates() {
+            state.candidates = [];
+            for (let i = 0; i < 4; i++) {
+                state.candidates.push(generateCandidate());
+            }
+            renderCandidatesTab();
+        }
+
+        function refreshCandidates() {
+            if (state.balance < 1500) {
+                showToast('❌ Недостаточно средств (нужно 1 500 ₽)', '#ef4444');
+                return;
+            }
+            state.balance -= 1500;
+            initCandidates();
+            updateTopBar();
+            logTerminal('🔄 HR-отдел прозвонил новые анкеты дропов по Подольску.');
+        }
+
+        function hireCandidate(candId) {
+            const cand = state.candidates.find(c => c.id === candId);
+            if (!cand) return;
+
+            if (state.balance < cand.hireCost) {
+                showToast(`❌ Не хватает денег на подъёмные дропу (${cand.hireCost.toLocaleString()} ₽)`, '#ef4444');
+                return;
+            }
+
+            state.balance -= cand.hireCost;
+            state.candidates = state.candidates.filter(c => c.id !== candId);
+
+            const currentB = state.buildings.find(b => b.id === state.selectedBuildingId);
+            if (currentB && currentB.owned && !currentB.dropId && !currentB.robbed) {
+                cand.assignedBuildingId = currentB.id;
+                currentB.dropId = cand.id;
+                showToast(`✅ ${cand.name} нанят и заселён на ${currentB.address}!`, '#10b981');
+                logTerminal(`👤 Дроп ${cand.name} заселён в квартиру: ${currentB.address}.`);
+            } else {
+                showToast(`✅ ${cand.name} нанят в штат! Назначь его в свободную квартиру.`, '#3b82f6');
+                logTerminal(`👤 Дроп ${cand.name} принят в резерв.`);
+            }
+
+            state.drops.push(cand);
+            if (state.candidates.length === 0) {
+                state.candidates.push(generateCandidate(), generateCandidate());
+            }
+
+            renderAll();
+        }
+
+        function rejectCandidate(candId) {
+            state.candidates = state.candidates.filter(c => c.id !== candId);
+            state.candidates.push(generateCandidate());
+            renderCandidatesTab();
+        }
+
+        // =========================================================================
+        // 5. УПРАВЛЕНИЕ КВАРТИРОЙ И СИМБОКСАМИ (ИНСПЕКТОР)
+        // =========================================================================
+        function selectBuilding(bId) {
+            state.selectedBuildingId = bId;
+            const b = state.buildings.find(x => x.id === bId);
+            if (b && map) {
+                map.panTo([b.lat, b.lng]);
+            }
+            renderInspector();
+        }
+
+        function buyApartment(bId) {
+            const b = state.buildings.find(x => x.id === bId);
+            if (!b || b.owned) return;
+
+            if (state.balance < b.price) {
+                showToast(`❌ Нужно ${b.price.toLocaleString()} ₽ для покупки квартиры!`, '#ef4444');
+                return;
+            }
+
+            state.balance -= b.price;
+            b.owned = true;
+            showToast(`🔑 Куплена квартира: ${b.address}!`, '#f59e0b');
+            logTerminal(`🏠 Выкуплена конспиративная квартира по адресу: ${b.address}.`);
+            renderAll();
+        }
+
+        function installSimbox(bId, slotIndex, modelId) {
+            const b = state.buildings.find(x => x.id === bId);
+            const model = SIMBOX_MODELS.find(m => m.id === modelId);
+            if (!b || !model || b.robbed) return;
+
+            if (state.balance < model.cost) {
+                showToast(`❌ Недостаточно средств на ${model.name} (${model.cost.toLocaleString()} ₽)`, '#ef4444');
+                return;
+            }
+
+            state.balance -= model.cost;
+            b.slots[slotIndex] = model.id;
+            showToast(`⚡ Установлен ${model.name} на ${b.address}!`, '#10b981');
+            logTerminal(`🔌 В квартире (${b.address}) смонтирован ${model.name}.`);
+            renderAll();
+        }
+
+        function assignDropToBuilding(bId, dropId) {
+            const b = state.buildings.find(x => x.id === bId);
+            const drop = state.drops.find(d => d.id === dropId);
+            if (!b || !drop) return;
+
+            if (drop.assignedBuildingId) {
+                const oldB = state.buildings.find(x => x.id === drop.assignedBuildingId);
+                if (oldB) oldB.dropId = null;
+            }
+
+            if (b.dropId) {
+                const oldD = state.drops.find(d => d.id === b.dropId);
+                if (oldD) oldD.assignedBuildingId = null;
+            }
+
+            b.dropId = drop.id;
+            drop.assignedBuildingId = b.id;
+
+            showToast(`👤 ${drop.name} заступил на смену (${b.address})`, '#10b981');
+            renderAll();
+        }
+
+        // =========================================================================
+        // 6. КРАЖИ ОБОРУДОВАНИЯ И ВЫЗОВ СПОРТИКОВ
+        // =========================================================================
+        function triggerRobberyCheck() {
+            state.buildings.forEach(b => {
+                if (!b.owned || b.robbed || !b.dropId) return;
+                const installedModels = b.slots.filter(s => s !== null);
+                if (installedModels.length === 0) return;
+
+                const drop = state.drops.find(d => d.id === b.dropId);
+                if (!drop || drop.isStarter || drop.risk <= 0) return;
+
+                const chancePerTick = (drop.risk / 100) * 0.035;
+                if (Math.random() < chancePerTick) {
+                    let totalValue = 0;
+                    b.slots.forEach(sId => {
+                        if (sId) {
+                            const m = SIMBOX_MODELS.find(x => x.id === sId);
+                            if (m) totalValue += m.cost;
+                        }
+                    });
+
+                    b.robbed = true;
+                    b.stolenValue = totalValue;
+                    b.slots = [null, null, null, null];
+                    b.dropId = null;
+
+                    state.drops = state.drops.filter(d => d.id !== drop.id);
+
+                    const incident = {
+                        id: 'rob_' + Date.now() + '_' + Math.floor(Math.random()*999),
+                        buildingId: b.id,
+                        address: b.address,
+                        dropName: drop.name,
+                        dropAvatar: drop.avatar,
+                        dropTraits: drop.traits.map(t => t.name).join(', '),
+                        stolenValue: totalValue,
+                        recoverAmount: Math.round(totalValue * 0.5),
+                        resolved: false
+                    };
+
+                    state.robberies.unshift(incident);
+
+                    showToast(`🚨 КРАЖА! Дроп ${drop.name} вынес симбоксы с ${b.address} на ${totalValue.toLocaleString()} ₽! Закажи спортиков!`, '#ef4444');
+                    logTerminal(`🚨 ЧП! Дроп ${drop.name} украл оборудование (${totalValue.toLocaleString()} ₽) с квартиры ${b.address}!`);
+                    renderAll();
+                }
+            });
+        }
+
+        function sendSportiki(robberyId) {
+            const rob = state.robberies.find(r => r.id === robberyId);
+            if (!rob || rob.resolved) return;
+
+            rob.resolved = true;
+            state.balance += rob.recoverAmount;
+
+            const b = state.buildings.find(x => x.id === rob.buildingId);
+            if (b) {
+                b.robbed = false;
+                b.stolenValue = 0;
+            }
+
+            showToast(`🥊 Спортики нашли ${rob.dropName}! Выбито 50% стоимости: +${rob.recoverAmount.toLocaleString()} ₽!`, '#10b981');
+            logTerminal(`🥊 Бригада спортиков навестила дропа (${rob.dropName}). В кассу возвращено +${rob.recoverAmount.toLocaleString()} ₽ (50%). Квартира на ${rob.address} снова открыта.`);
+            renderAll();
+        }
+
+        // =========================================================================
+        // 7. ВЫКУП ПОДОЛЬСКА И ЭКОНОМИКА
+        // =========================================================================
+        function buyDistrict(distId) {
+            const d = state.districts.find(x => x.id === distId);
+            if (!d || d.bought) return;
+
+            if (state.balance < d.cost) {
+                showToast(`❌ Не хватает средств! Нужно ${d.cost.toLocaleString()} ₽`, '#ef4444');
+                return;
+            }
+
+            state.balance -= d.cost;
+            d.bought = true;
+            showToast(`🏙️ Выкуплен объект: ${d.name}!`, '#f59e0b');
+            logTerminal(`👑 Сделка века: объект «${d.name}» перешёл под твой полный контроль!`);
+
+            const allBought = state.districts.every(x => x.bought);
+            if (allBought) {
+                alert('🎉 ПОЗДРАВЛЯЕМ! ТЫ ПОЛНОСТЬЮ ВЫКУПИЛ ГОРОД ПОДОЛЬСК! Теперь ты и Саша Улыбка — полноправные владельцы всего города!');
+            }
+
+            renderAll();
+        }
+
+        function calculateIncomePerSec() {
+            let total = 0;
+            state.buildings.forEach(b => {
+                if (!b.owned || b.robbed || !b.dropId) return;
+                const drop = state.drops.find(d => d.id === b.dropId);
+                if (!drop) return;
+
+                let buildingBase = 0;
+                b.slots.forEach(sId => {
+                    if (sId) {
+                        const m = SIMBOX_MODELS.find(x => x.id === sId);
+                        if (m) buildingBase += m.income;
+                    }
+                });
+
+                total += Math.round(buildingBase * drop.speed);
+            });
+
+            const districtBonuses = [400, 900, 2000, 4500, 9000, 18000, 50000];
+            state.districts.forEach((d, idx) => {
+                if (d.bought) total += districtBonuses[idx];
+            });
+
+            return total;
+        }
+
+        // =========================================================================
+        // 8. ОТРИСОВКА ИНТЕРФЕЙСА (RENDER)
+        // =========================================================================
+        function renderAll() {
+            updateTopBar();
+            renderMapMarkers();
+            renderCandidatesTab();
+            renderTeamTab();
+            renderSportikiTab();
+            renderDistrictsTab();
+            renderInspector();
+        }
+
+        function updateTopBar() {
+            const income = calculateIncomePerSec();
+            const ownedCount = state.buildings.filter(b => b.owned).length;
+            let simboxCount = 0;
+            state.buildings.forEach(b => {
+                simboxCount += b.slots.filter(s => s !== null).length;
+            });
+
+            document.getElementById('ui-balance').innerText = `${Math.floor(state.balance).toLocaleString()} ₽`;
+            document.getElementById('ui-income').innerText = `+${income.toLocaleString()} ₽/с`;
+            document.getElementById('ui-nodes').innerText = `${ownedCount} кв. / ${simboxCount} бокс.`;
+            document.getElementById('ui-drops').innerText = `${state.drops.length} чел.`;
+
+            const totalCost = state.districts.reduce((acc, d) => acc + d.cost, 0);
+            const boughtCost = state.districts.filter(d => d.bought).reduce((acc, d) => acc + d.cost, 0);
+            const pct = Math.min(100, ((boughtCost + state.balance * 0.25) / totalCost) * 100);
+            document.getElementById('ui-goal-pct').innerText = `${pct.toFixed(1)}%`;
+            document.getElementById('ui-goal-bar').style.width = `${pct}%`;
+
+            document.getElementById('badge-candidates').innerText = state.candidates.length;
+            const activeRobs = state.robberies.filter(r => !r.resolved).length;
+            const robBadge = document.getElementById('badge-robberies');
+            if (activeRobs > 0) {
+                robBadge.style.display = 'inline-block';
+                robBadge.innerText = activeRobs;
+            } else {
+                robBadge.style.display = 'none';
+            }
+        }
+
+        function renderCandidatesTab() {
+            const container = document.getElementById('candidates-list');
+            container.innerHTML = '';
+
+            state.candidates.forEach(c => {
+                let riskClass = 'tag-green';
+                if (c.risk >= 50) riskClass = 'tag-red';
+                else if (c.risk >= 25) riskClass = 'tag-amber';
+
+                const traitsHtml = c.traits.map(t => {
+                    let cls = 'tag-blue';
+                    let icon = '🔹';
+                    if (t.type === 'good') { cls = 'tag-green'; icon = '✅'; }
+                    if (t.type === 'bad') { cls = 'tag-red'; icon = '⚠️'; }
+                    return `<span class="trait-pill ${cls}" title="${t.desc}">${icon} ${t.name}</span>`;
+                }).join('');
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <div style="font-size:26px; background:#0f172a; width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center;">${c.avatar}</div>
+                            <div>
+                                <div class="card-title">${c.name}, ${c.age} л.</div>
+                                <div style="font-size:11px; color:var(--text-muted);">Скорость смены SIM: <b style="color:#60a5fa;">x${c.speed}</b></div>
+                            </div>
+                        </div>
+                        <span class="tag ${riskClass}">Кража: ${c.risk}%</span>
+                    </div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Признаки по анкете:</div>
+                    <div class="traits-wrap">${traitsHtml}</div>
+                    <div style="display:grid; grid-template-columns: 1fr auto; gap:8px; margin-top:10px;">
+                        <button class="btn btn-green" onclick="hireCandidate('${c.id}')">
+                            Нанять (${c.hireCost.toLocaleString()} ₽)
+                        </button>
+                        <button class="btn btn-outline" style="width:auto; padding:0 14px;" onclick="rejectCandidate('${c.id}')" title="Отклонить анкету">
+                            ✖ Отказ
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderTeamTab() {
+            const container = document.getElementById('team-list');
+            container.innerHTML = '';
+
+            state.drops.forEach(d => {
+                const b = state.buildings.find(x => x.id === d.assignedBuildingId);
+                const locText = b ? `📍 На точке: ${b.address}` : '💤 В резерве (не назначен на квартиру)';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.cursor = b ? 'pointer' : 'default';
+                if (b) card.onclick = () => selectBuilding(b.id);
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <div style="font-size:24px;">${d.avatar}</div>
+                            <div>
+                                <div class="card-title">${d.name} ${d.isStarter ? '⭐' : ''}</div>
+                                <div style="font-size:11px; color:var(--accent-green);">${locText}</div>
+                            </div>
+                        </div>
+                        <span class="tag ${d.risk === 0 ? 'tag-green' : (d.risk > 40 ? 'tag-red' : 'tag-amber')}">
+                            Риск: ${d.risk}%
+                        </span>
+                    </div>
+                    <div style="font-size:11px; color:var(--text-muted);">
+                        КПД смены SIM-карт: <b>x${d.speed}</b>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderSportikiTab() {
+            const container = document.getElementById('robberies-list');
+            container.innerHTML = '';
+
+            if (state.robberies.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:12px;">Пока никто не рискнул украсть оборудование. Саша Улыбка работает честно!</div>`;
+                return;
+            }
+
+            state.robberies.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">${r.dropAvatar} ${r.dropName}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Точка: ${r.address}</div>
+                        </div>
+                        <span class="tag ${r.resolved ? 'tag-green' : 'tag-red'}">
+                            ${r.resolved ? 'НАКАЗАН' : 'В БЕГАХ'}
+                        </span>
+                    </div>
+                    <div style="font-size:11px; color:#f87171; margin: 6px 0;">
+                        Признаки крысы: ${r.dropTraits}
+                    </div>
+                    <div style="font-size:12px; margin-bottom:10px;">
+                        Украдено на: <b>${r.stolenValue.toLocaleString()} ₽</b><br>
+                        Возврат через спортиков (50%): <b style="color:var(--accent-green);">+${r.recoverAmount.toLocaleString()} ₽</b>
+                    </div>
+                    ${!r.resolved ? `
+                        <button class="btn btn-red" onclick="sendSportiki('${r.id}')">
+                            🥊 Выслать спортиков (+${r.recoverAmount.toLocaleString()} ₽)
+                        </button>
+                    ` : `
+                        <div style="font-size:11px; color:var(--accent-green); font-weight:600;">
+                            ✅ Спортики выбили половину суммы и вернули ключи от квартиры!
+                        </div>
+                    `}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderDistrictsTab() {
+            const container = document.getElementById('districts-list');
+            container.innerHTML = '';
+
+            state.districts.forEach(d => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">${d.name}</div>
+                        <span class="tag ${d.bought ? 'tag-green' : 'tag-amber'}">
+                            ${d.bought ? 'ВЫКУПЛЕНО' : `${d.cost.toLocaleString()} ₽`}
+                        </span>
+                    </div>
+                    <div style="font-size:11px; color:var(--accent-green); margin-bottom:10px;">
+                        ${d.bonus}
+                    </div>
+                    ${!d.bought ? `
+                        <button class="btn btn-amber" onclick="buyDistrict('${d.id}')" ${state.balance < d.cost ? 'disabled' : ''}>
+                            💰 Выкупить за ${d.cost.toLocaleString()} ₽
+                        </button>
+                    ` : ''}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderInspector() {
+            const b = state.buildings.find(x => x.id === state.selectedBuildingId);
+            const titleEl = document.getElementById('insp-title');
+            const subEl = document.getElementById('insp-subtitle');
+            const bodyEl = document.getElementById('inspector-content');
+
+            if (!b) {
+                titleEl.innerText = 'Выбери дом на карте';
+                subEl.innerText = 'Кликни по маркеру или любому зданию в Подольске';
+                bodyEl.innerHTML = '';
+                return;
+            }
+
+            titleEl.innerText = b.address;
+            subEl.innerText = `Район: ${b.district} • Координаты: ${b.lat.toFixed(4)}, ${b.lng.toFixed(4)}`;
+
+            if (!b.owned) {
+                bodyEl.innerHTML = `
+                    <div class="card" style="text-align:center; padding:24px 16px;">
+                        <div style="font-size:42px; margin-bottom:10px;">🏢</div>
+                        <h3 style="font-size:16px; margin-bottom:6px;">Квартира доступна для покупки</h3>
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">
+                            Выкупи квартиру в этом доме Подольска, чтобы разместить до 4 стоек SIM-боксов и посадить туда дропа.
+                        </p>
+                        <div style="font-size:20px; font-weight:800; color:var(--accent-amber); margin-bottom:16px;" class="mono">
+                            ${b.price.toLocaleString()} ₽
+                        </div>
+                        <button class="btn btn-green" onclick="buyApartment('${b.id}')">
+                            🔑 Купить квартиру за ${b.price.toLocaleString()} ₽
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (b.robbed) {
+                const rob = state.robberies.find(r => r.buildingId === b.id && !r.resolved);
+                bodyEl.innerHTML = `
+                    <div class="card" style="border-color:var(--accent-red); background:rgba(239,68,68,0.1); text-align:center; padding:20px;">
+                        <div style="font-size:40px;">🚨</div>
+                        <h3 style="color:#f87171; margin:8px 0;">АППАРАТУРА УКРАДЕНА ДРОПОМ!</h3>
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+                            Неблагонадёжный дроп вынес все SIM-боксы с этой квартиры. Чтобы разблокировать точку и вернуть 50% стоимости оборудования, отправь спортиков!
+                        </p>
+                        ${rob ? `
+                            <button class="btn btn-red" onclick="sendSportiki('${rob.id}')">
+                                🥊 Заказать спортиков (+${rob.recoverAmount.toLocaleString()} ₽)
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            const assignedDrop = state.drops.find(d => d.id === b.dropId);
+            const freeDrops = state.drops.filter(d => d.id !== b.dropId);
+
+            let dropHtml = '';
+            if (assignedDrop) {
+                dropHtml = `
+                    <div class="card" style="border-color:var(--accent-green);">
+                        <div style="font-size:10px; text-transform:uppercase; color:var(--accent-green); font-weight:700; margin-bottom:6px;">
+                            👤 ДРОП НА КВАРТИРЕ (МЕНЯЕТ SIM-КАРТЫ)
+                        </div>
+                        <div class="card-header">
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <div style="font-size:28px;">${assignedDrop.avatar}</div>
+                                <div>
+                                    <div class="card-title">${assignedDrop.name}</div>
+                                    <div style="font-size:11px; color:var(--text-muted);">Множитель дохода: <b style="color:#60a5fa;">x${assignedDrop.speed}</b></div>
+                                </div>
+                            </div>
+                            <span class="tag ${assignedDrop.risk === 0 ? 'tag-green' : (assignedDrop.risk > 40 ? 'tag-red' : 'tag-amber')}">
+                                Шанс кражи: ${assignedDrop.risk}%
+                            </span>
+                        </div>
+                        <div class="traits-wrap">
+                            ${assignedDrop.traits.map(t => `<span class="trait-pill tag-blue">${t.name}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                dropHtml = `
+                    <div class="card" style="border-color:var(--accent-amber); background:rgba(245,158,11,0.07);">
+                        <div class="card-title" style="color:var(--accent-amber);">⚠️ В квартире нет дропа!</div>
+                        <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                            Без дропа некому менять заблокированные SIM-карты. Назначь человека из штата или найми во вкладке «Анкеты».
+                        </p>
+                    </div>
+                `;
+            }
+
+            let assignSelectorHtml = '';
+            if (freeDrops.length > 0) {
+                assignSelectorHtml = `
+                    <div style="margin-bottom:14px;">
+                        <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:6px;">Посадить другого дропа на эту квартиру:</label>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            ${freeDrops.map(fd => `
+                                <button class="btn btn-outline" style="justify-content:space-between; font-size:12px;" onclick="assignDropToBuilding('${b.id}', '${fd.id}')">
+                                    <span>${fd.avatar} ${fd.name} (x${fd.speed}, Риск ${fd.risk}%)</span>
+                                    <span style="color:var(--accent-green);">Назначить →</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let slotsHtml = '<div class="slots-grid">';
+            b.slots.forEach((sId, idx) => {
+                if (sId) {
+                    const m = SIMBOX_MODELS.find(x => x.id === sId);
+                    slotsHtml += `
+                        <div class="slot-box installed">
+                            <div style="font-size:18px;">📟</div>
+                            <div style="font-weight:700; margin-top:4px; color:var(--text-main);">${m.name}</div>
+                            <div class="mono" style="color:var(--accent-green); font-size:12px; margin-top:2px;">+${m.income} ₽/с</div>
+                        </div>
+                    `;
+                } else {
+                    slotsHtml += `
+                        <div class="slot-box">
+                            <div style="color:var(--text-muted); margin-bottom:6px;">Слот #${idx + 1} пуст</div>
+                            ${SIMBOX_MODELS.map(m => `
+                                <button class="btn btn-outline" style="padding:5px 8px; font-size:10px; margin-bottom:4px;" onclick="installSimbox('${b.id}', ${idx}, '${m.id}')">
+                                    + ${m.name.split(' ')[0]} (${(m.cost/1000)}k ₽)
+                                </button>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            });
+            slotsHtml += '</div>';
+
+            bodyEl.innerHTML = `
+                ${dropHtml}
+                ${assignSelectorHtml}
+                <div style="margin-top:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h4 style="font-size:13px;">⚡ Установленные SIM-боксы (4 слота)</h4>
+                    </div>
+                    ${slotsHtml}
+                </div>
+                <div class="card" style="margin-top:12px; background:#0b1120;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">СПРАВОЧНИК ОБОРУДОВАНИЯ:</div>
+                    ${SIMBOX_MODELS.map(m => `
+                        <div style="display:flex; justify-content:space-between; font-size:11px; padding:4px 0; border-bottom:1px solid #1e293b;">
+                            <span><b>${m.name}</b> (+${m.income} ₽/с)</span>
+                            <span class="mono" style="color:var(--accent-amber);">${m.cost.toLocaleString()} ₽</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // =========================================================================
+        // 9. УТИЛИТЫ, СОХРАНЕНИЯ И ИГРОВОЙ ЦИКЛ
+        // =========================================================================
+        function switchTab(tabName) {
+            ['drops', 'team', 'sportiki', 'podolsk'].forEach(t => {
+                document.getElementById('tab-btn-' + t).classList.toggle('active', t === tabName);
+                document.getElementById('panel-' + t).classList.toggle('active', t === tabName);
+            });
+        }
+
+        function logTerminal(msg) {
+            const box = document.getElementById('terminal-log');
+            const time = new Date().toLocaleTimeString('ru-RU');
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = `<span style="color:#10b981;">[${time}]</span> ${msg}`;
+            box.prepend(div);
+        }
+
+        function showToast(text, color = '#10b981') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeftColor = color;
+            toast.innerHTML = text;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 4200);
+        }
+
+        function saveGameManual() {
+            localStorage.setItem('podolsk_syndicate_save_v2', JSON.stringify(state));
+            showToast('💾 Прогресс сохранён в браузере!', '#3b82f6');
         }
 
         function loadGame() {
-            try {
-                let sg = localStorage.getItem('oleg_save_v9');
-                let sc = localStorage.getItem('oleg_crypto_v9');
-                if(sg) {
-                    let parsed = JSON.parse(sg);
-                    game = { ...game, ...parsed };
-                    // Обновляем базовые тарифы и описания
-                    game.tariffs = {
-                        white: { name: 'Белый (Авито/Доставки)', rate: 1.0, burn: 0.002, desc: '1.0 ₽/сек с SIM. Надежно и стабильно.' },
-                        grey:  { name: 'Серый (Арбитраж/Крипто)', rate: 3.5, burn: 0.008, desc: '3.5 ₽/сек с SIM. Оптимальный выбор.' },
-                        black: { name: 'Черный (Банки/Схемы)', rate: 12.0, burn: 0.03, desc: '12.0 ₽/сек с SIM! Высокий износ, максимальный куш!' }
-                    };
-                }
-                if(sc) cryptoData = JSON.parse(sc);
-                game.apts.forEach(a => { 
-                    if(a.turbo === undefined) a.turbo = false;
-                    a.boxes.forEach(b => { if(b.cooler === undefined) b.cooler = false; }); 
-                });
-            } catch(e) {}
-        }
-        loadGame();
-
-        window.hardReset = function() {
-            if(confirm("Удалить сохранение и начать заново сбалансированную игру?")) { localStorage.clear(); location.reload(); }
-        };
-
-        function fmt(n) { return Math.floor(n).toLocaleString('ru-RU'); }
-        function flashErr() { document.body.style.backgroundColor = '#300'; setTimeout(()=>document.body.style.backgroundColor='', 150); }
-
-        window.clickESIM = function() { game.bal += 10; updateUI(); };
-        window.buySims = (amt, cost) => { if(game.bal >= cost) { game.bal-=cost; game.sims+=amt; logMsg(`Куплено ${amt} SIM`); updateUI(); } else flashErr(); };
-
-        // --- NAV ---
-        window.navView = v => { game.view = v; document.querySelectorAll('.btn-nav').forEach(b=>b.classList.remove('active')); document.getElementById('nav-'+v).classList.add('active'); renderView(); };
-        const vCont = document.getElementById('t-view-container');
-
-        function renderView() {
-            if(game.view==='map') renderMap();
-            else if(game.view==='apt') renderApt(game.activeApt);
-            else if(game.view==='contracts') renderContracts();
-            else if(game.view==='empire') renderEmpire();
-            else if(game.view==='realty') renderRealty();
-        }
-
-        function renderMap() {
-            let h = `<h3>🌍 КВАРТИРЫ И ПОДВАЛЫ</h3><div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">`;
-            game.apts.forEach(a => {
-                let totalBad = 0, totalSims = a.boxes.length * 32;
-                a.boxes.forEach(b => totalBad += b.bad);
-                let ok = totalSims - totalBad;
-                let coolersCount = a.boxes.filter(b=>b.cooler).length;
-                h += `<div class="apt-card" onclick="game.activeApt=${a.id}; navView('apt');">
-                    <div>
-                        <div style="font-weight:bold; color:var(--primary);">${a.name}</div>
-                        <div style="font-size:0.8rem; color:#888;">Боксы: ${a.boxes.length}/${a.slots} | SIM OK: <span style="color:#0f0">${ok}</span> | Кулеры: <span style="color:var(--secondary)">${coolersCount}/${a.boxes.length}</span> | ${Math.floor(a.temp)}°C</div>
-                    </div>
-                    <div><span class="st-ok status-badge">АКТИВНО</span></div>
-                </div>`;
-            });
-            vCont.innerHTML = h + `</div>`;
-        }
-
-        function renderApt(id) {
-            let a = game.apts.find(x => x.id === id);
-            if(!a) { navView('map'); return; }
-            let tC = a.temp < 60 ? '#0f0' : (a.temp < 85 ? '#ffcc00' : '#ff003c');
-            let h = `<div class="apt-header">
-                <div>
-                    <button class="btn-main" style="width:auto; padding:2px 6px; margin-bottom:5px;" onclick="navView('map')">⬅ Назад</button>
-                    <h3 style="color:var(--primary)">📍 ${a.name}</h3>
-                    <div style="font-size:0.8rem; margin-top:5px;">Темп: <b style="color:${tC}">${Math.floor(a.temp)}°C</b> <div class="temp-bar-bg"><div class="temp-bar" style="width:${Math.min(100,a.temp)}%; background:${tC}"></div></div></div>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
-                    <button class="btn-main" style="width:auto; padding:4px 8px;" onclick="buyBox(${a.id})" ${a.boxes.length>=a.slots?'disabled':''}>+ SIM-Box (3,500 ₽)</button>
-                    <button class="btn-main" style="width:auto; padding:4px 8px; border-color:${a.turbo?'var(--danger)':'var(--warn)'}; color:${a.turbo?'var(--danger)':'var(--warn)'};" onclick="toggleTurbo(${a.id})">${a.turbo?'🔥 ТУРБО-РЕЖИМ ВКЛЮЧЕН (x2 ДОХОД)':'🚀 ВКЛЮЧИТЬ ТУРБО-РЕЖИМ'}</button>
-                </div>
-            </div>
-            <div style="font-size:0.75rem; color:#888; margin-bottom:10px;">> ❄️ ПРАВИЛО ОХЛАЖДЕНИЯ: Когда у ВСЕХ боксов в комнате установлены кулеры, температура падает на 5°C/сек и стабильно держится не выше 40°C (даже в Турбо-режиме)!</div>
-            <button class="btn-main" style="border-color:var(--warn); color:var(--warn); margin-bottom:15px;" onclick="repairApt(${a.id})">🔄 ПОЧИНИТЬ ВСЕ БОКСЫ (Требуются SIM со склада)</button>
-            <div class="rack-container">`;
-            
-            a.boxes.forEach((b, i) => {
-                let ok = b.total - b.bad;
-                let led = b.bad === b.total ? 'led-off' : 'led-on';
-                let coolerHTML = b.cooler 
-                    ? '<span style="color:var(--secondary); font-size:0.75rem; border:1px solid var(--secondary); padding:2px 5px; border-radius:3px;">❄️ Охлаждается</span>' 
-                    : `<button class="btn-cooler" onclick="buyBoxCooler(${a.id}, ${i})">❄️ Кулер (1,200 ₽)</button>`;
-                h += `<div class="rack-unit">
-                    <div class="rack-info">
-                        <span class="rack-led ${led}"></span>
-                        <span>[BOX-${(i+1).toString().padStart(2,'0')}]</span>
-                        <span>SIM: <b style="color:#0f0">${ok}</b>/<b style="color:#f00">${b.bad}</b></span> 
-                        ${coolerHTML}
-                    </div>
-                    <div class="rack-controls">
-                        <button class="btn-repair" onclick="repairBox(${a.id}, ${i})" ${b.bad===0?'disabled':''}>🔄 Fix (${b.bad})</button>
-                    </div>
-                </div>`;
-            });
-            vCont.innerHTML = h + `</div>`;
-        }
-
-        function renderContracts() {
-            let h = `<h3>🏦 ТАРИФЫ ТРАФИКА</h3>`;
-            Object.keys(game.tariffs).forEach(k => {
-                let t = game.tariffs[k]; let act = game.tariff === k;
-                h += `<div class="apt-card" style="border-color:${act?'var(--primary)':'#1a331a'}; cursor:pointer;" onclick="game.tariff='${k}'; renderContracts();">
-                    <div><div style="font-weight:bold; color:${act?'var(--primary)':'#ccc'}">${t.name}</div><div style="font-size:0.75rem; color:#777;">${t.desc}</div></div>
-                    <button class="btn-main" style="width:auto; padding:4px 8px; background:${act?'var(--primary)':'#000'}; color:${act?'#000':'var(--primary)'}">${act?'АКТИВЕН':'ВЫБРАТЬ'}</button>
-                </div>`;
-            });
-            vCont.innerHTML = h;
-        }
-
-        function renderEmpire() {
-            let h = `<h3>🏢 БИЗНЕСЫ</h3>`;
-            game.businesses.forEach((b, i) => {
-                h += `<div class="apt-card" style="cursor:default">
-                    <div><div style="font-weight:bold; color:var(--secondary)">${b.name} [x${b.count}]</div><div style="font-size:0.75rem; color:#777;">${b.desc}</div></div>
-                    <button class="btn-main" style="width:auto; padding:4px 8px;" onclick="buyBiz(${i})">Купить (${fmt(b.cost)} ₽)</button>
-                </div>`;
-            });
-            vCont.innerHTML = h;
-        }
-
-        function renderRealty() {
-            let h = `<h3>🛒 НЕДВИЖИМОСТЬ</h3>`;
-            game.realty.forEach((r, i) => {
-                h += `<div class="apt-card" style="cursor:default">
-                    <div><div style="font-weight:bold; color:var(--primary)">${r.name}</div><div style="font-size:0.75rem; color:#777;">Слоты: ${r.slots} боксов</div></div>
-                    <button class="btn-main" style="width:auto; padding:4px 8px;" onclick="buyRealty(${i})">Купить (${fmt(r.price)} ₽)</button>
-                </div>`;
-            });
-            if(game.realty.length===0) h += `<p style="color:#555">Всё выкуплено.</p>`;
-            vCont.innerHTML = h;
-        }
-
-        function renderUpgrades() {
-            let lst = document.getElementById('upgrades-list'); if(!lst) return;
-            let h = '';
-            Object.keys(game.upgrades).forEach(k => {
-                let u = game.upgrades[k];
-                h += `<div class="apt-card" style="cursor:default">
-                    <div><div style="font-weight:bold; color:${u.owned?'#666':'var(--secondary)'}">${u.name}</div><div style="font-size:0.75rem; color:#888;">${u.desc}</div></div>
-                    <button class="btn-main" style="width:auto; padding:5px 10px;" onclick="buyUpgrade('${k}')" ${u.owned?'disabled':''}>${u.owned?'КУПЛЕНО':fmt(u.cost)+' ₽'}</button>
-                </div>`;
-            });
-            lst.innerHTML = h;
-        }
-
-        // --- PURCHASES ---
-        window.buyBox = id => { 
-            let a = game.apts.find(x=>x.id===id); 
-            if(game.bal >= 3500 && a.boxes.length < a.slots){ 
-                game.bal -= 3500; 
-                a.boxes.push({bad:0, total:32, cooler:false}); 
-                logMsg("Установлен новый SIM-бокс за 3,500 ₽."); 
-                updateUI(); renderApt(id); 
-            } else flashErr(); 
-        };
-        window.buyBoxCooler = (aId, bIdx) => { 
-            let b = game.apts.find(x=>x.id===aId).boxes[bIdx]; 
-            if(!b.cooler && game.bal >= 1200){ 
-                game.bal -= 1200; 
-                b.cooler = true; 
-                logMsg("Куплен кулер для SIM-бокса за 1,200 ₽."); 
-                updateUI(); renderApt(aId); 
-            } else flashErr(); 
-        };
-        window.toggleTurbo = id => { 
-            let a = game.apts.find(x=>x.id===id); 
-            a.turbo = !a.turbo; 
-            logMsg(a.turbo ? `Включен Турбо-режим на точке "${a.name}"!` : `Турбо-режим выключен.`); 
-            updateUI(); renderApt(id); 
-        };
-        window.repairBox = (aId, bIdx) => { 
-            let b = game.apts.find(x=>x.id===aId).boxes[bIdx]; 
-            if(b.bad > 0 && game.sims >= b.bad){ 
-                game.sims -= b.bad; b.bad = 0; updateUI(); renderApt(aId); 
-            } else flashErr(); 
-        };
-        window.repairApt = aId => { 
-            let a = game.apts.find(x=>x.id===aId); let need = 0; 
-            a.boxes.forEach(b => need += b.bad); 
-            if(need > 0 && game.sims >= need){ 
-                a.boxes.forEach(b => b.bad = 0); game.sims -= need; updateUI(); renderApt(aId); 
-            } else flashErr(); 
-        };
-        window.buyBiz = idx => { 
-            let b = game.businesses[idx]; 
-            if(game.bal >= b.cost){ 
-                game.bal -= b.cost; b.count++; b.cost = Math.floor(b.cost * 1.5); 
-                updateUI(); renderEmpire(); 
-            } else flashErr(); 
-        };
-        window.buyRealty = idx => { 
-            let r = game.realty[idx]; 
-            if(game.bal >= r.price){ 
-                game.bal -= r.price; 
-                game.apts.push({id:r.id, name:r.name, slots:r.slots, temp:24, turbo:false, boxes:[{bad:0, total:32, cooler:false}]}); 
-                game.realty.splice(idx,1); 
-                updateUI(); renderRealty(); 
-            } else flashErr(); 
-        };
-        window.buyUpgrade = k => { 
-            let u = game.upgrades[k]; 
-            if(!u.owned && game.bal >= u.cost){ 
-                game.bal -= u.cost; u.owned = true; updateUI(); renderUpgrades(); 
-            } else flashErr(); 
-        };
-
-        // --- CRYPTO LIVE MARKET ---
-        function drawCrypto() {
-            let cvs = document.getElementById('crypto-canvas'); if(!cvs) return;
-            let ctx = cvs.getContext('2d'); ctx.clearRect(0,0,cvs.width,cvs.height);
-            let max = Math.max(...cryptoData.history, 150); let min = Math.min(...cryptoData.history, 10);
-            let prev = cryptoData.history.length > 1 ? cryptoData.history[cryptoData.history.length - 2] : cryptoData.price;
-            let isUp = cryptoData.price >= prev;
-            ctx.strokeStyle = isUp ? '#00ff41' : '#ff003c';
-            ctx.lineWidth = 2.5; ctx.beginPath();
-            cryptoData.history.forEach((p, i) => {
-                let x = (i / (cryptoData.history.length - 1)) * (cvs.width - 10) + 5;
-                let y = cvs.height - ((p - min) / (max - min + 1)) * (cvs.height - 24) - 12;
-                if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-            });
-            ctx.stroke();
-            document.getElementById('cr-price').innerText = fmt(cryptoData.price) + " ₽";
-            let diff = cryptoData.price - prev;
-            let pct = prev > 0 ? ((diff / prev) * 100).toFixed(1) : 0;
-            let dEl = document.getElementById('cr-delta');
-            if(dEl) {
-                dEl.style.color = diff >= 0 ? 'var(--primary)' : 'var(--danger)';
-                dEl.innerText = `${diff >= 0 ? '▲ +' : '▼ '}${Math.abs(diff)} ₽ (${Math.abs(pct)}%)`;
+            const raw = localStorage.getItem('podolsk_syndicate_save_v2');
+            if (raw) {
+                try {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && parsed.buildings && parsed.drops) {
+                        state = parsed;
+                    }
+                } catch (e) {}
             }
-            document.getElementById('cr-hold').innerText = cryptoData.holdings.toFixed(1) + " $KURCH";
-            let vEl = document.getElementById('cr-val');
-            if(vEl) vEl.innerText = `(≈ ${fmt(cryptoData.holdings * cryptoData.price)} ₽)`;
         }
 
-        window.tradeCrypto = (action, amount) => {
-            if(action === 'buy') {
-                let cost = cryptoData.price * amount;
-                if(game.bal >= cost) {
-                    game.bal -= cost; cryptoData.holdings += amount;
-                    logMsg(`Куплено ${amount} $KURCH по ${fmt(cryptoData.price)} ₽`);
-                    drawCrypto(); updateUI();
-                } else flashErr();
-            } else if(action === 'buy_max') {
-                if(game.bal >= cryptoData.price) {
-                    let count = Math.floor(game.bal / cryptoData.price);
-                    let cost = count * cryptoData.price;
-                    game.bal -= cost; cryptoData.holdings += count;
-                    logMsg(`Закуплено ${count} $KURCH на ${fmt(cost)} ₽`);
-                    drawCrypto(); updateUI();
-                } else flashErr();
-            } else if(action === 'sell') {
-                if(cryptoData.holdings >= amount) {
-                    cryptoData.holdings -= amount;
-                    let gain = cryptoData.price * amount;
-                    game.bal += gain;
-                    logMsg(`Продано ${amount} $KURCH за ${fmt(gain)} ₽`);
-                    drawCrypto(); updateUI();
-                } else flashErr();
-            } else if(action === 'sell_all') {
-                if(cryptoData.holdings > 0) {
-                    let gain = cryptoData.holdings * cryptoData.price;
-                    game.bal += gain;
-                    logMsg(`Продано всё (${cryptoData.holdings.toFixed(1)} $KURCH) за ${fmt(gain)} ₽`);
-                    cryptoData.holdings = 0;
-                    drawCrypto(); updateUI();
-                } else flashErr();
-            }
-        };
-
-        window.flyDrone = (cost, ch, rwd, simsRwd=0) => {
-            let l = document.getElementById('drone-log'); if(game.bal<cost){l.innerText="Нет денег!"; return;}
-            game.bal-=cost; updateUI(); l.innerText="Дрон летит...";
-            setTimeout(() => {
-                if(Math.random()<=ch){ 
-                    game.bal += rwd; game.sims += simsRwd; 
-                    l.innerHTML = `<span style="color:#0f0">Успех! +${fmt(rwd)} ₽ ${simsRwd>0?'и +'+simsRwd+' SIM':''}</span>`; 
-                } else { 
-                    l.innerHTML = `<span style="color:#f00">Сбит ПВО! Груз утерян.</span>`; 
-                }
-                updateUI();
-            }, 1500);
-        };
-
-        // --- RAID & RANSOM MECHANICS ---
-        function getRaidChance() {
-            let base = Math.min(85, game.day * 2.2);
-            if(game.upgrades.bunker.owned) base *= 0.5;
-            return Math.round(base * 10) / 10;
-        }
-        function getRansomCost() { 
-            return Math.floor(12000 * Math.pow(1.3, game.day - 1)); 
-        }
-
-        let pendingRaid = false;
-        function triggerRaid() {
-            pendingRaid = true;
-            let cost = getRansomCost();
-            document.getElementById('raid-msg').innerText = `День ${game.day}: ОМОН накрыл ваши SIM-боксы в Подольске! Оборудование опечатано.`;
-            document.getElementById('ransom-info').innerHTML = `Шанс откупиться: <b>20%</b><br>Сумма взятки майору: <b>${fmt(cost)} ₽</b>`;
-            document.getElementById('modal-raid').style.display = 'flex';
-        }
-
-        window.payRansom = function() {
-            let cost = getRansomCost();
-            if(Math.random() < 0.20) {
-                if(game.bal >= cost) {
-                    game.bal -= cost;
-                    alert(`✅ УСПЕХ!
-Майор принял взятку ${fmt(cost)} ₽. Дело закрыто, оборудование разблокировано!`);
-                    document.getElementById('modal-raid').style.display = 'none';
-                    pendingRaid = false;
-                } else {
-                    alert(`❌ Недостаточно средств для взятки (${fmt(cost)} ₽)! Вас увозят в СИЗО №3.`);
-                    triggerBSOD();
-                }
-            } else {
-                alert(`❌ НЕУДАЧА!
-Майор взял деньги, но начальник отдела передумал. Вас вяжут в СИЗО №3!`);
-                triggerBSOD();
-            }
-        };
-
-        window.failRansom = function() { alert("Вы отказались платить. Вас доставили в СИЗО №3."); triggerBSOD(); };
-
-        function triggerBSOD() {
-            document.getElementById('modal-raid').style.display = 'none';
-            document.body.innerHTML = `<div style="background:#0000aa; color:#fff; width:100vw; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; font-family:Consolas; text-align:center; padding:30px; z-index:9999999; position:relative;">
-                <h1 style="font-size:3rem; background:#fff; color:#0000aa; padding:10px 20px; margin-bottom:20px;">ИГРА ОКОНЧЕНА</h1>
-                <p style="font-size:1.5rem; margin-bottom:15px;">Вы провели на свободе ${game.day} дней.</p>
-                <p style="font-size:1.2rem; margin-bottom:30px;">Ваша империя SIM-боксов конфискована ФСБ.<br>Текущая резиденция: <b>СИЗО №3</b>.</p>
-                <button onclick="localStorage.clear(); location.reload();" style="padding:15px 30px; font-size:1.2rem; background:#000; color:#fff; border:2px solid #fff; cursor:pointer;">НАЧАТЬ ЗАНОВО</button>
-            </div>`;
-        }
-
-        // --- GAME LOOP ---
-        function updateUI() {
-            document.getElementById('t-bal').innerText = fmt(game.bal) + " ₽";
-            document.getElementById('t-inc').innerText = fmt(game.inc) + " ₽/с";
-            document.getElementById('t-sims').innerText = fmt(game.sims);
-            document.getElementById('t-mult').innerText = "x" + (1.0 + game.businesses.reduce((s,b)=>s+b.count*0.2, 0)).toFixed(1);
-
-            let pct = Math.min(100, (game.bal/UDO_GOAL)*100);
-            document.getElementById('udo-fill').style.width = pct + "%";
-            document.getElementById('udo-label').innerText = `${fmt(game.bal)} / 10,000,000 ₽ (${pct.toFixed(1)}%)`;
-
-            let rc = getRaidChance();
-            let rBar = document.getElementById('t-risk-bar');
-            if(rBar) rBar.style.width = rc + "%";
-            let rTxt = document.getElementById('t-risk-text');
-            if(rTxt) rTxt.innerText = `Шанс облавы: ${rc}%`;
-
-            let dSec = DAY_DURATION_SEC - game.dayTime;
-            let m = Math.floor(dSec / 60); let s = dSec % 60;
-            document.getElementById('day-counter').innerText = `📅 ДЕНЬ ${game.day} (до смены: ${m}:${s<10?'0':''}${s})`;
+        function resetGame() {
+            if (!confirm('Сбросить весь прогресс и начать захват Подольска заново с Сашей Улыбкой?')) return;
+            localStorage.removeItem('podolsk_syndicate_save_v2');
+            location.reload();
         }
 
         setInterval(() => {
-            if(pendingRaid) return;
-
-            game.dayTime++;
-            if(game.dayTime >= DAY_DURATION_SEC) {
-                game.dayTime = 0; game.day++; logMsg(`Наступил ДЕНЬ ${game.day}! Шанс облавы вырос.`);
-                if(Math.random() * 100 < getRaidChance()) { triggerRaid(); return; }
+            const inc = calculateIncomePerSec();
+            if (inc > 0) {
+                state.balance += inc;
+                updateTopBar();
             }
-
-            let t = game.tariffs[game.tariff];
-            let sInc = 0;
-            let vpnRed = game.upgrades.vpn.owned ? 0.5 : 1.0;
-
-            game.apts.forEach(a => {
-                let allCooled = a.boxes.length > 0 && a.boxes.every(b => b.cooler);
-                let turboMult = a.turbo ? 2.5 : 1.0;
-
-                if(allCooled) {
-                    // Когда у всех боксов есть вентилятор: падает на 5°C в сек до 40°C, затем держится не выше 40°C
-                    if(a.temp > 40) {
-                        a.temp = Math.max(40, a.temp - 5);
-                    } else {
-                        // Температура держится в комфортном диапазоне 25-40°C и никогда не превышает 40°C
-                        let targetTemp = a.turbo ? 38 : 28;
-                        if(a.temp < targetTemp) a.temp += 0.5;
-                        else if(a.temp > targetTemp) a.temp -= 0.5;
-                        a.temp = Math.min(40, Math.max(20, a.temp));
-                    }
-                } else {
-                    // Если хотя бы у одного бокса нет кулера — комната нагревается
-                    let heat = 0;
-                    a.boxes.forEach(b => { heat += (b.cooler ? 0.1 : 1.5) * turboMult; });
-                    let cool = 0.5; // Естественное рассеивание тепла
-                    a.temp = Math.max(20, a.temp + heat - cool);
-                }
-                let oh = a.temp >= 85;
-
-                let act = 0;
-                let burnMult = a.turbo ? 2.0 : 1.0;
-                a.boxes.forEach(b => {
-                    // Авто-замена дронами
-                    if(game.upgrades.auto_rep.owned && b.bad > 0 && game.sims > 0) {
-                        let fix = Math.min(b.bad, 2, game.sims);
-                        b.bad -= fix; game.sims -= fix;
-                    }
-
-                    let ok = b.total - b.bad;
-                    if(!oh) {
-                        act += ok;
-                        for(let k=0; k<ok; k++) { 
-                            if(Math.random() < (t.burn * vpnRed * burnMult)) b.bad++; 
-                        }
-                    }
-                });
-                if(!oh) sInc += act * t.rate * (a.turbo ? 2.0 : 1.0);
-            });
-
-            let bInc = 0; game.businesses.forEach(b => bInc += b.count * b.inc);
-            let mult = 1.0 + game.businesses.reduce((s,b)=>s+b.count*0.2, 0);
-
-            game.inc = (sInc + bInc) * mult;
-            game.bal += game.inc;
-
-            // Live Crypto Market
-            let swing = (Math.random() - 0.495) * (cryptoData.price * 0.14 + 8);
-            if(Math.random() < 0.08) swing *= 2.5;
-            cryptoData.price = Math.max(15, Math.min(2500, Math.round(cryptoData.price + swing)));
-            cryptoData.history.push(cryptoData.price);
-            if(cryptoData.history.length > 35) cryptoData.history.shift();
-
-            updateUI(); drawCrypto();
-            if(game.view==='map') renderMap(); else if(game.view==='apt') renderApt(game.activeApt);
-            saveGame();
+            triggerRobberyCheck();
         }, 1000);
 
-        // UDO Win
-        window.claimUDO = function() {
-            if(game.bal >= UDO_GOAL) {
-                game.bal -= UDO_GOAL;
-                document.getElementById('epic-ending').style.display = 'flex';
-                let ee = document.getElementById('epic-ending');
-                ee.innerHTML = `<h1 style="color:var(--primary); font-size:3rem; margin-bottom:20px;">🎉 УДО ИЗ СИЗО №3 УСПЕШНО ОПЛАЧЕНО! 🎉</h1>
-                <p style="font-size:1.3rem; color:#fff; line-height:1.6; margin-bottom:30px;">
-                    Вы провели на свободе <b>${game.day} дней</b>, построили теневую телеком-империю от Подольска до Серпухова, пережили облавы ФСБ и выкупили свободу за 10 миллионов рублей!<br>У ворот вас ждет тонированный Maybach.
-                </p>
-                <button class="btn-main" style="width:300px; font-size:1.2rem;" onclick="document.getElementById('epic-ending').style.display='none';">ИГРАТЬ ДАЛЬШЕ</button>`;
-            } else {
-                alert(`Нужно 10 000 000 ₽ на УДО! Сейчас у вас: ${fmt(game.bal)} ₽.`);
-            }
-        };
+        setInterval(() => {
+            localStorage.setItem('podolsk_syndicate_save_v2', JSON.stringify(state));
+        }, 15000);
 
-        renderMap(); renderUpgrades(); drawCrypto(); updateUI();
+        window.onload = () => {
+            loadGame();
+            initMap();
+            if (state.candidates.length === 0) initCandidates();
+            renderAll();
+            logTerminal('🚀 Система PODOLSK SYNDICATE запущена. Первый дроп Саша Улыбка на связи в квартире на ул. Кирова, 42.');
+        };
     </script>
 </body>
 </html>
