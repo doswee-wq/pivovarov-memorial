@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OlegOS v7.0: LONG RUN & EPIC UDO EDITION</title>
+    <title>OlegOS v8.0: HARDCORE TYCOON & UDO SURVIVAL</title>
     <style>
         :root {
-            --bg: #020204;
+            --bg: #010204;
             --primary: #00ff41;
             --secondary: #00ffff;
             --purple: #d600ff;
             --danger: #ff003c;
             --warn: #ffcc00;
-            --window-bg: rgba(4, 8, 4, 0.98);
+            --window-bg: rgba(2, 6, 3, 0.98);
             --window-border: #00ff41;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', monospace; user-select: none; }
         body {
             background-color: var(--bg);
             background-image: 
-                radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.05) 0%, transparent 80%),
-                linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.04) 0%, transparent 85%),
+                linear-gradient(rgba(0, 255, 65, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.02) 1px, transparent 1px);
             background-size: 100% 100%, 40px 40px, 40px 40px;
             color: var(--primary);
             height: 100vh; overflow: hidden; position: relative;
@@ -30,41 +30,40 @@
         .crt-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-            background-size: 100% 4px; z-index: 9999; pointer-events: none; opacity: 0.3;
+            background-size: 100% 4px; z-index: 9999; pointer-events: none; opacity: 0.25;
         }
 
-        /* Top Bar */
+        /* TOP STATUS BAR (DAYS & UDO) */
         .top-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 36px;
+            position: fixed; top: 0; left: 0; width: 100%; height: 38px;
             background: #000; border-bottom: 2px solid var(--purple);
             z-index: 500; display: flex; align-items: center; padding: 0 15px; gap: 15px;
-            box-shadow: 0 0 10px rgba(214, 0, 255, 0.2); justify-content: space-between;
+            box-shadow: 0 0 12px rgba(214, 0, 255, 0.3); justify-content: space-between;
         }
-        .udo-container { display: flex; align-items: center; gap: 10px; flex-grow: 1; max-width: 800px; }
+        .day-counter { background: #1a0022; border: 1px solid var(--purple); color: #fff; padding: 3px 8px; font-weight: bold; font-size: 0.8rem; border-radius: 3px; white-space: nowrap; }
+        .udo-container { display: flex; align-items: center; gap: 10px; flex-grow: 1; max-width: 600px; }
         .udo-bar-track { flex-grow: 1; height: 16px; background: #1a0022; border: 1px solid var(--purple); position: relative; overflow: hidden; border-radius: 2px; }
         .udo-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--purple), var(--secondary)); transition: width 0.5s; }
-        .udo-bar-label { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 0.75rem; line-height: 14px; color: #fff; font-weight: bold; text-shadow: 1px 1px 2px #000; }
-        .save-indicator { font-size: 0.7rem; color: #888; animation: pulseFade 2s infinite; }
-        
-        @keyframes pulseFade { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; color: var(--primary); } }
+        .udo-bar-label { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 0.7rem; line-height: 14px; color: #fff; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+        .save-indicator { font-size: 0.7rem; color: #666; }
 
-        /* Desktop Icons */
+        /* Desktop */
         .desktop { padding: 50px 20px 20px 20px; display: grid; grid-template-columns: repeat(auto-fill, 100px); gap: 15px; z-index: 10; position: relative; }
-        .icon { background: rgba(0, 15, 5, 0.6); border: 1px solid #113311; display: flex; flex-direction: column; align-items: center; cursor: pointer; text-align: center; transition: 0.1s; color: var(--primary); z-index: 20; padding: 10px 4px; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
-        .icon:hover { background: rgba(0, 255, 65, 0.1); border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,255,65,0.2); }
+        .icon { background: rgba(0, 15, 5, 0.7); border: 1px solid #113311; display: flex; flex-direction: column; align-items: center; cursor: pointer; text-align: center; transition: 0.1s; color: var(--primary); z-index: 20; padding: 10px 4px; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
+        .icon:hover { background: rgba(0, 255, 65, 0.12); border-color: var(--primary); transform: translateY(-3px); }
         .icon:active { transform: scale(0.95); }
-        .icon-emoji { font-size: 2.6rem; pointer-events: none; }
+        .icon-emoji { font-size: 2.5rem; pointer-events: none; }
         .icon-text { font-size: 0.7rem; background: #000; padding: 3px 5px; margin-top: 8px; border: 1px solid #333; pointer-events: none; font-weight: bold; width: 95%; text-overflow: ellipsis; overflow: hidden; }
 
         /* Windows */
-        .window { position: absolute; top: 45px; left: 5%; width: 700px; max-width: 95vw; background: var(--window-bg); border: 1px solid var(--window-border); box-shadow: 0 0 30px rgba(0, 255, 65, 0.15); display: none; flex-direction: column; z-index: 50; overflow: hidden; }
-        #app-tycoon { width: 1100px; top: 42px; left: 2%; }
+        .window { position: absolute; top: 48px; left: 5%; width: 700px; max-width: 95vw; background: var(--window-bg); border: 1px solid var(--window-border); box-shadow: 0 0 30px rgba(0, 255, 65, 0.12); display: none; flex-direction: column; z-index: 50; overflow: hidden; }
+        #app-tycoon { width: 1100px; top: 44px; left: 2%; }
         
         .window-header { background: #000; color: var(--primary); border-bottom: 1px solid var(--primary); padding: 8px 12px; display: flex; justify-content: space-between; font-weight: bold; cursor: move; align-items: center; }
         .close-btn { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 2px 8px; cursor: pointer; font-weight: bold; transition: 0.2s;}
         .close-btn:hover { background: var(--danger); color: #fff; }
         .window-content { padding: 12px; height: 550px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; position: relative; }
-        #app-tycoon .window-content { height: 650px; padding: 10px; }
+        #app-tycoon .window-content { height: 630px; padding: 10px; }
 
         /* Tycoon Layout */
         .tycoon-layout { display: flex; height: 100%; gap: 10px; }
@@ -74,7 +73,7 @@
         .stat-box { border: 1px solid #1a331a; padding: 8px; background: #000; text-align: center; }
         .stat-box.cyan { border-color: #005555; background: #000a0a; color: var(--secondary); }
         .stat-box.purple { border-color: #330044; background: #0a000f; color: #fff; }
-        .val { font-size: 1.3rem; font-weight: bold; margin-top: 4px; color: var(--primary); }
+        .val { font-size: 1.25rem; font-weight: bold; margin-top: 4px; color: var(--primary); }
 
         .btn-main { background: #020a02; color: var(--primary); border: 1px solid var(--primary); padding: 10px; font-size: 0.85rem; cursor: pointer; text-transform: uppercase; transition: 0.1s; font-weight: bold; width: 100%; text-align: center;}
         .btn-main:hover { background: #051a05; }
@@ -90,7 +89,7 @@
         .risk-bar { width: 0%; height: 100%; background: var(--danger); transition: 0.5s linear; }
         .risk-text { position: absolute; top: 0; left: 0; width: 100%; text-align: center; color: #fff; font-size: 0.7rem; line-height: 14px; font-weight: bold; text-shadow: 1px 1px #000; }
 
-        /* Cards & Lists */
+        /* Cards */
         .apt-card { border: 1px solid #1a331a; padding: 12px; cursor: pointer; transition: 0.1s; background: #030803; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .apt-card:hover { border-color: var(--primary); background: #051105; }
         .status-badge { padding: 3px 6px; font-size: 0.7rem; font-weight: bold; border-radius: 2px; border: 1px solid transparent; }
@@ -98,21 +97,15 @@
         .st-warn { color: var(--warn); border-color: var(--warn); background: rgba(255,204,0,0.1); }
         .st-err { color: var(--danger); border-color: var(--danger); background: rgba(255,0,0,0.1); }
 
-        /* SERVER RACK UI (Optimized Performance) */
+        /* Racks */
         .rack-container { background: #000; border: 2px solid #222; border-radius: 3px; padding: 10px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 15px; }
-        .rack-unit { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: #050505; border: 1px solid #1a1a1a; padding: 6px 10px; 
-            font-size: 0.85rem; color: #888; 
-        }
-        .rack-unit:hover { border-color: #333; background: #0a0a0a; }
+        .rack-unit { display: flex; justify-content: space-between; align-items: center; background: #050505; border: 1px solid #1a1a1a; padding: 6px 10px; font-size: 0.85rem; color: #888; }
         .rack-info { display: flex; gap: 15px; align-items: center; }
         .rack-led { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
         .led-on { background: var(--primary); box-shadow: 0 0 5px var(--primary); }
         .led-off { background: var(--danger); box-shadow: 0 0 5px var(--danger); }
-        .btn-repair { background: transparent; color: var(--warn); border: 1px solid var(--warn); padding: 2px 8px; cursor: pointer; font-size: 0.75rem; transition: 0.1s; }
+        .btn-repair { background: transparent; color: var(--warn); border: 1px solid var(--warn); padding: 2px 8px; cursor: pointer; font-size: 0.75rem; }
         .btn-repair:hover { background: var(--warn); color: #000; }
-        .btn-repair:disabled { opacity: 0.3; pointer-events: none; border-color: #444; color: #444; }
 
         .apt-header { display: flex; justify-content: space-between; border-bottom: 1px solid #1a331a; padding-bottom: 10px; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;}
         .temp-bar-bg { width: 80px; height: 8px; border: 1px solid #444; background: #000; display: inline-block; vertical-align: middle;}
@@ -124,22 +117,21 @@
         /* Taskbar */
         .taskbar { position: fixed; bottom: 0; left: 0; width: 100%; height: 38px; background: #000; border-top: 1px solid #1a331a; display: flex; align-items: center; padding: 0 12px; z-index: 1000; gap: 10px; }
         .start-btn { background: #051105; color: var(--primary); padding: 5px 15px; font-weight: bold; border: 1px solid var(--primary); cursor: pointer; }
-        .start-btn:hover { background: var(--primary); color: #000; }
         .clock { margin-left: auto; color: #666; font-size: 0.85rem; }
 
-        /* Epic Ending Sequence */
-        #epic-ending {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #000; z-index: 999999; flex-direction: column; padding: 50px;
-            font-family: 'Courier New', monospace; overflow: hidden;
-        }
+        /* Modal: Raid & Ransom */
+        .modal-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 99999; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
+        .raid-box { background: #150005; border: 3px solid var(--danger); max-width: 600px; width: 100%; padding: 25px; box-shadow: 0 0 50px var(--danger); }
+
+        /* Epic Ending */
+        #epic-ending { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; flex-direction: column; padding: 50px; font-family: 'Courier New', monospace; overflow: hidden; }
         .epic-line { color: var(--primary); font-size: 1.2rem; margin: 4px 0; opacity: 0; animation: fadeIn 0.1s forwards; text-shadow: 0 0 5px var(--primary); }
         .epic-red { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
         .epic-purple { color: var(--purple); text-shadow: 0 0 5px var(--purple); font-weight: bold; font-size: 1.5rem;}
         @keyframes fadeIn { to { opacity: 1; } }
 
         @media (max-width: 820px) {
-            .window { width: 100% !important; left: 0 !important; top: 36px !important; height: calc(100vh - 74px) !important; border: none; }
+            .window { width: 100% !important; left: 0 !important; top: 38px !important; height: calc(100vh - 76px) !important; border: none; }
             #app-tycoon .window-content { height: 100%; }
             .tycoon-layout { flex-direction: column; }
             .tycoon-left { width: 100%; border-right: none; border-bottom: 1px solid var(--primary); padding-right: 0; padding-bottom: 10px; height: auto; max-height: 48vh; }
@@ -149,47 +141,44 @@
 <body ontouchstart="">
     <div class="crt-overlay"></div>
 
-    <!-- TOP UDO GOAL BAR -->
+    <!-- TOP BAR (DAYS & UДО) -->
     <div class="top-bar">
+        <div class="day-counter" id="day-counter">📅 ДЕНЬ 1 (05:00 до смены)</div>
         <div class="udo-container">
-            <span style="color:var(--purple); font-weight:bold; font-size:0.8rem; white-space:nowrap;">🎯 УДО: 10 ЛЯМОВ</span>
+            <span style="color:var(--purple); font-weight:bold; font-size:0.75rem; white-space:nowrap;">🎯 УДО: 10М</span>
             <div class="udo-bar-track">
                 <div class="udo-bar-fill" id="udo-fill"></div>
                 <div class="udo-bar-label" id="udo-label">0 / 10,000,000 ₽</div>
             </div>
-            <button class="btn-main" id="udo-quick-btn" style="width:auto; padding:2px 8px; font-size:0.7rem; border-color:var(--purple); color:var(--purple);" onclick="claimUDO()">ВЫКУПИТЬ СВОБОДУ</button>
+            <button class="btn-main" style="width:auto; padding:2px 8px; font-size:0.7rem; border-color:var(--purple); color:var(--purple);" onclick="claimUDO()">УДО</button>
         </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <span class="save-indicator" id="save-ind">💾 Auto-Save</span>
-            <button class="btn-main" style="width:auto; padding:2px 6px; font-size:0.65rem; border-color:#555; color:#888;" onclick="hardReset()">СБРОС ИГРЫ</button>
-        </div>
+        <button class="btn-main" style="width:auto; padding:2px 6px; font-size:0.65rem; border-color:#555; color:#888;" onclick="hardReset()">СБРОС</button>
     </div>
 
     <!-- DESKTOP -->
     <div class="desktop">
         <button class="icon" onclick="openWindow('app-tycoon')">
-            <div class="icon-emoji">🏢</div><div class="icon-text">Empire_v7.exe</div>
+            <div class="icon-emoji">🏢</div><div class="icon-text">Empire_v8.exe</div>
         </button>
         <button class="icon" onclick="openWindow('app-upgrades')">
-            <div class="icon-emoji">🕶️</div><div class="icon-text">Darknet_Форум</div>
+            <div class="icon-emoji">🕶️</div><div class="icon-text">Darknet</div>
         </button>
         <button class="icon" onclick="openWindow('app-crypto')">
             <div class="icon-emoji">🪙</div><div class="icon-text">$KURCH_Trade</div>
         </button>
         <button class="icon" onclick="openWindow('app-drone')">
-            <div class="icon-emoji">🚁</div><div class="icon-text">Аэро-Доставка</div>
+            <div class="icon-emoji">🚁</div><div class="icon-text">Дроны</div>
         </button>
     </div>
 
-    <!-- APP 1: MEGA TYCOON -->
+    <!-- APP 1: TYCOON -->
     <div id="app-tycoon" class="window" style="display:flex;">
         <div class="window-header">
-            <span>[root@mainframe] SIM-Box Empire v7.0 - ANTI-LAG EDITION</span>
+            <span>[root@podolsk] SIM-Box Empire v8.0 - SURVIVAL EDITION</span>
             <button class="close-btn" onclick="closeWindow('app-tycoon')">X</button>
         </div>
         <div class="window-content">
             <div class="tycoon-layout">
-                <!-- LEFT SIDEBAR -->
                 <div class="tycoon-left">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
                         <div class="stat-box">БАЛАНС<div class="val" id="t-bal">0 ₽</div></div>
@@ -200,20 +189,18 @@
                         <div class="stat-box purple">МНОЖИТЕЛЬ<div class="val" id="t-mult" style="color:#fff">x1.0</div></div>
                     </div>
 
-                    <div style="font-size:0.7rem; color:var(--danger); font-weight:bold; margin-top:4px;">🚨 РОЗЫСК ОПЕРГРУППЫ (ШТРАФ ПРИ 100%):</div>
+                    <div style="font-size:0.7rem; color:var(--warn); font-weight:bold; margin-top:4px;" id="raid-chance-label">🚨 ШАНС ОБЛАВЫ СЕГОДНЯ: 2.0%</div>
                     <div class="risk-bar-bg">
-                        <div class="risk-bar" id="t-risk-bar"></div>
-                        <div class="risk-text" id="t-risk-text">0%</div>
+                        <div class="risk-bar" id="t-risk-bar" style="width:2%;"></div>
+                        <div class="risk-text" id="t-risk-text">Шанс облавы: 2%</div>
                     </div>
 
-                    <button class="btn-main" id="btn-click-esim" onclick="clickESIM()" style="border-width:2px; font-size:0.9rem;">⚡ РЕГАТЬ eSIM (+5 ₽)</button>
+                    <button class="btn-main" onclick="clickESIM()" style="border-width:2px; font-size:0.9rem;">⚡ РЕГАТЬ eSIM (+1 ₽)</button>
                     
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                        <button class="btn-main" onclick="buySims(100, 1000)" style="font-size:0.7rem; border-color:#0aa; color:#0cc;">📦 100 SIM<br>(1,000 ₽)</button>
-                        <button class="btn-main" onclick="buySims(1000, 8500)" style="font-size:0.7rem; border-color:#0aa; color:#0cc;">🚚 1000 SIM<br>(8,500 ₽)</button>
+                        <button class="btn-main" onclick="buySims(100, 2500)" style="font-size:0.7rem; border-color:#0aa; color:#0cc;">📦 100 SIM<br>(2,500 ₽)</button>
+                        <button class="btn-main" onclick="buySims(1000, 22000)" style="font-size:0.7rem; border-color:#0aa; color:#0cc;">🚚 1000 SIM<br>(22,000 ₽)</button>
                     </div>
-
-                    <button class="btn-main" onclick="buyBribe()" style="font-size:0.75rem; border-color:#a00; color:var(--danger);">💸 Дать Взятку (-30% Риск) | <span id="bribe-price">15,000</span> ₽</button>
 
                     <div style="font-size:0.7rem; color:#666; text-align:center; margin-top:5px;">МЕНЮ УПРАВЛЕНИЯ:</div>
                     <div class="nav-grid">
@@ -224,24 +211,21 @@
                     </div>
                 </div>
 
-                <!-- RIGHT DYNAMIC AREA -->
                 <div class="tycoon-right" id="t-view-container"></div>
             </div>
         </div>
     </div>
 
-    <!-- APP 2: DARKNET FORUM (UPGRADES) -->
+    <!-- APP 2: DARKNET -->
     <div id="app-upgrades" class="window">
-        <div class="window-header"><span>🕶️ RAMP Форум - Теневые Услуги</span><button class="close-btn" onclick="closeWindow('app-upgrades')">X</button></div>
+        <div class="window-header"><span>🕶️ Darknet Форум</span><button class="close-btn" onclick="closeWindow('app-upgrades')">X</button></div>
         <div class="window-content">
-            <h3 style="color:var(--secondary); margin-bottom:10px;">ПРОГРАММНЫЕ АПГРЕЙДЫ</h3>
-            <div style="display:flex; flex-direction:column; gap:10px;" id="upgrades-list">
-                <!-- Injected via JS -->
-            </div>
+            <h3 style="color:var(--secondary); margin-bottom:10px;">АПГРЕЙДЫ И ЗАЩИТА</h3>
+            <div style="display:flex; flex-direction:column; gap:10px;" id="upgrades-list"></div>
         </div>
     </div>
 
-    <!-- APP 3: CRYPTO EXCHANGE -->
+    <!-- APP 3: CRYPTO -->
     <div id="app-crypto" class="window">
         <div class="window-header"><span>🪙 $KURCH / RUB EXCHANGE</span><button class="close-btn" onclick="closeWindow('app-crypto')">X</button></div>
         <div class="window-content">
@@ -251,10 +235,10 @@
             </div>
             <canvas id="crypto-canvas" width="650" height="200"></canvas>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                <button class="btn-main" onclick="buyCrypto(0.5)">КУПИТЬ (50% БАЛАНСА)</button>
+                <button class="btn-main" onclick="buyCrypto(0.5)">КУПИТЬ (50%)</button>
                 <button class="btn-main" style="border-color:var(--warn); color:var(--warn);" onclick="sellCrypto()">ПРОДАТЬ ВСЁ</button>
             </div>
-            <button class="btn-main" style="border-color:var(--purple); color:#fff; background:#203; margin-top:10px;" onclick="pumpCrypto()">🔥 ИНСАЙДЕРСКИЙ ПАМП (Риск +20%)</button>
+            <button class="btn-main" style="border-color:var(--purple); color:#fff; background:#203; margin-top:10px;" onclick="pumpCrypto()">🔥 ПАМП КРИПТЫ</button>
         </div>
     </div>
 
@@ -262,39 +246,48 @@
     <div id="app-drone" class="window">
         <div class="window-header"><span>🚁 ДОСТАВКА КОНТРАБАНДЫ</span><button class="close-btn" onclick="closeWindow('app-drone')">X</button></div>
         <div class="window-content">
-            <p style="font-size:0.85rem; color:#aaa; margin-bottom:15px;">Рискованные полеты над территорией ФСИН. Огромный куш, но шанс потерять деньги.</p>
+            <p style="font-size:0.85rem; color:#aaa; margin-bottom:15px;">Полеты дронов через периметр СИЗО №3.</p>
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <div class="apt-card" style="cursor:default;">
-                    <div><strong style="color:var(--primary)">Мелкая посылка</strong><br><small>Шанс: 85% | Награда: +50,000 ₽, +500 SIM</small></div>
-                    <button class="btn-main" style="width:120px;" onclick="flyDrone(20000, 0.85, 50000, 500)">Лететь (20k ₽)</button>
+                    <div><strong style="color:var(--primary)">Мелкий груз</strong><br><small>Шанс: 80% | +50k ₽, +300 SIM</small></div>
+                    <button class="btn-main" style="width:120px;" onclick="flyDrone(30000, 0.8, 50000, 300)">Лететь (30k)</button>
                 </div>
                 <div class="apt-card" style="cursor:default;">
-                    <div><strong style="color:var(--secondary)">Средний груз (Смартфоны)</strong><br><small>Шанс: 65% | Награда: +300,000 ₽</small></div>
-                    <button class="btn-main" style="width:120px;" onclick="flyDrone(100000, 0.65, 300000, 0)">Лететь (100k ₽)</button>
-                </div>
-                <div class="apt-card" style="cursor:default;">
-                    <div><strong style="color:var(--purple)">Крупный груз (Криптоматы)</strong><br><small>Шанс: 45% | Награда: +1,500,000 ₽</small></div>
-                    <button class="btn-main" style="width:120px;" onclick="flyDrone(500000, 0.45, 1500000, 0)">Лететь (500k ₽)</button>
+                    <div><strong style="color:var(--secondary)">Крупный груз</strong><br><small>Шанс: 55% | +400k ₽</small></div>
+                    <button class="btn-main" style="width:120px;" onclick="flyDrone(180000, 0.55, 400000, 0)">Лететь (180k)</button>
                 </div>
             </div>
-            <div id="drone-log" style="border:1px solid #333; padding:10px; background:#000; margin-top:10px; min-height:60px; font-size:0.8rem; color:var(--warn);">Ожидание вылета...</div>
+            <div id="drone-log" style="border:1px solid #333; padding:10px; background:#000; margin-top:10px; min-height:60px; font-size:0.8rem; color:var(--warn);">Ожидание...</div>
+        </div>
+    </div>
+
+    <!-- MODAL: FSB RAID & RANSOM -->
+    <div id="modal-raid" class="modal-screen">
+        <div class="raid-box">
+            <h1 style="color:var(--danger); margin-bottom:10px;">🚨 ОБЛАВА ФСБ И ПОЛИЦИИ! 🚨</h1>
+            <p style="color:#fff; margin-bottom:15px;" id="raid-msg">Ваши SIM-боксы в Подольске были вычислены силовиками! Оборудование опечатано.</p>
+            <div style="background:#000; border:1px solid var(--danger); padding:12px; margin-bottom:15px; color:var(--warn);" id="ransom-info">
+                Шанс откупиться (20%): Успех! Сумма взятки: 150,000 ₽.
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;" id="raid-buttons">
+                <button class="btn-main" style="background:#003300; border-color:#00ff41;" onclick="payRansom()">💸 ДАТЬ ВЗЯТКУ</button>
+                <button class="btn-main" style="background:#330000; border-color:#ff003c;" onclick="failRansom()">УЕХАТЬ В СИЗО №3</button>
+            </div>
         </div>
     </div>
 
     <!-- TASKBAR -->
     <div class="taskbar">
-        <button class="start-btn" onclick="openWindow('app-tycoon')">OlegOS v7.0</button>
-        <span id="log-ticker" style="font-size:0.75rem; color:#0a0; white-space:nowrap; overflow:hidden; flex-grow:1; margin:0 10px;">> Система загружена...</span>
+        <button class="start-btn" onclick="openWindow('app-tycoon')">OlegOS v8.0</button>
+        <span id="log-ticker" style="font-size:0.75rem; color:#0a0; white-space:nowrap; overflow:hidden; flex-grow:1; margin:0 10px;">> Система загружена... Стойка безопасности активна.</span>
         <div class="clock" id="clock">00:00:00</div>
     </div>
 
-    <!-- EPIC ENDING SEQUENCE -->
-    <div id="epic-ending">
-        <!-- Lines injected via JS -->
-    </div>
+    <!-- EPIC ENDING -->
+    <div id="epic-ending"></div>
 
     <script>
-        // --- BASE OS LOGIC ---
+        // --- BASE OS ---
         let topZ = 100;
         window.openWindow = id => { let el = document.getElementById(id); if(el){ el.style.display='flex'; el.style.zIndex=++topZ; } };
         window.closeWindow = id => { let el = document.getElementById(id); if(el) el.style.display='none'; };
@@ -318,123 +311,78 @@
         });
 
         setInterval(() => { let c=document.getElementById('clock'); if(c) c.innerText=new Date().toLocaleTimeString(); }, 1000);
+        function logMsg(msg) { let t = document.getElementById('log-ticker'); if(t) t.innerText = `> ${msg}`; }
 
-        function logMsg(msg) {
-            let ticker = document.getElementById('log-ticker');
-            if(ticker) ticker.innerText = `> ${msg}`;
-        }
-
-        // --- GAME STATE & SAVE SYSTEM ---
+        // --- HARDCORE ECONOMY & DAYS ---
         const UDO_GOAL = 10000000;
-        
-        let defaultGame = {
-            bal: 1000, inc: 0, sims: 100, risk: 0, clickVal: 5, bribeCost: 15000,
-            view: 'map', activeApt: 0, udoUnlocked: false, tariff: 'white',
+        const DAY_DURATION_SEC = 300; // 5 minutes per day
+
+        let game = {
+            bal: 800, inc: 0, sims: 50, day: 1, dayTime: 0,
+            view: 'map', activeApt: 0, tariff: 'white',
             upgrades: {
-                autoclick: { name: 'AutoClicker.exe', cost: 15000, owned: false, desc: 'Кликает сам 2 раза в сек' },
-                vpn: { name: 'Hardware VPN Tunnel', cost: 75000, owned: false, desc: 'Снижает бан симок на 50%' },
-                stealth: { name: 'Глушилки Сигнала ФСБ', cost: 250000, owned: false, desc: 'Замедляет рост риска' },
-                crypto_bot: { name: 'Торговый Бот $KURCH', cost: 500000, owned: false, desc: 'Пассивный доход от трейдинга (+25k/сек)' }
+                vpn: { name: 'Hardware VPN (Меньше износ)', cost: 100000, owned: false, desc: 'Износ симок в 2 раза ниже' },
+                bunker: { name: 'Фольгированные стены (-Шанс облавы)', cost: 350000, owned: false, desc: 'Рост шанса облавы вдвое медленнее' },
+                auto_rep: { name: 'Авто-замена симок', cost: 800000, owned: false, desc: 'Дроны сами меняют сгоревшие симки' }
             },
             tariffs: {
-                white: { name: 'Белый (Доставки)', rate: 0.5, burn: 0.005, riskAdd: 0.05, desc: '0.5 ₽/сек с SIM. Безопасно.' },
-                grey:  { name: 'Серый (Арбитраж)', rate: 2.0, burn: 0.02, riskAdd: 0.3, desc: '2.0 ₽/сек с SIM. Средне.' },
-                black: { name: 'Черный (Схемы)', rate: 10.0, burn: 0.06, riskAdd: 1.5, desc: '10.0 ₽/сек с SIM! Опасно!' }
+                white: { name: 'Белый (Авито/Доставки)', rate: 0.15, burn: 0.002, desc: '0.15 ₽/сек. Надежно.' },
+                grey:  { name: 'Серый (Арбитраж)', rate: 0.8, burn: 0.01, desc: '0.8 ₽/сек. Средне.' },
+                black: { name: 'Черный (Схемы/Банки)', rate: 4.5, burn: 0.04, desc: '4.5 ₽/сек! Высокий износ!' }
             },
             apts: [
-                { id: 0, name: "Подвал (Подольск)", slots: 4, temp: 25, ac: false, boxes: [{ bad: 0, total: 32 }] }
+                { id: 0, name: "Подвал (Подольск)", slots: 4, temp: 24, ac: false, boxes: [{bad:0, total:32}] }
             ],
             realty: [
-                { id: 1, name: "Однушка (Серпухов)", price: 50000, slots: 8 },
-                { id: 2, name: "Гараж (Бутово)", price: 150000, slots: 15 },
-                { id: 3, name: "Склад (Чехов)", price: 500000, slots: 30 }
+                { id: 1, name: "Однушка (Серпухов)", price: 60000, slots: 8 },
+                { id: 2, name: "Гараж (Бутово)", price: 200000, slots: 16 },
+                { id: 3, name: "Склад (Чехов)", price: 800000, slots: 32 }
             ],
             businesses: [
-                { id: 'shawarma', name: 'Сеть Шаурмичных (Отмыв)', cost: 30000, count: 0, inc: 1000, mult: 0.1, desc: '+1,000 ₽/с, +10% Множитель' },
-                { id: 'dropnet', name: 'Школьники-Дропы', cost: 120000, count: 0, inc: 5000, mult: 0.2, desc: 'Авто-ремонт боксов, +5k ₽/с' },
-                { id: 'tower', name: 'Своя Вышка 5G', cost: 800000, count: 0, inc: 35000, mult: 0.5, desc: '+35k ₽/с, +50% Множитель' }
+                { id: 'shawarma', name: 'Шаурмичная у МЦД', cost: 40000, count: 0, inc: 300, desc: '+300 ₽/с' },
+                { id: 'tower', name: 'Вышка связи 5G', cost: 1200000, count: 0, inc: 12000, desc: '+12,000 ₽/с' }
             ]
         };
 
-        let game = JSON.parse(JSON.stringify(defaultGame));
         let cryptoData = { price: 100, holdings: 0, history: Array(30).fill(100) };
 
         function saveGame() {
             try {
-                localStorage.setItem('oleg_save_v7', JSON.stringify(game));
-                localStorage.setItem('oleg_crypto_v7', JSON.stringify(cryptoData));
+                localStorage.setItem('oleg_save_v8', JSON.stringify(game));
+                localStorage.setItem('oleg_crypto_v8', JSON.stringify(cryptoData));
             } catch(e) {}
         }
 
         function loadGame() {
             try {
-                let sg = localStorage.getItem('oleg_save_v7');
-                let sc = localStorage.getItem('oleg_crypto_v7');
-                if(sg) {
-                    let parsed = JSON.parse(sg);
-                    // Merge to keep new structure if updated
-                    game = { ...defaultGame, ...parsed };
-                    game.tariffs = defaultGame.tariffs; // keep hardcoded values
-                }
+                let sg = localStorage.getItem('oleg_save_v8');
+                let sc = localStorage.getItem('oleg_crypto_v8');
+                if(sg) game = { ...game, ...JSON.parse(sg) };
                 if(sc) cryptoData = JSON.parse(sc);
             } catch(e) {}
         }
-
-        window.hardReset = function() {
-            if(confirm("Точно удалить сохранение и начать заново?")) {
-                localStorage.removeItem('oleg_save_v7');
-                localStorage.removeItem('oleg_crypto_v7');
-                location.reload();
-            }
-        };
-
-        // Initialize
         loadGame();
 
+        window.hardReset = function() {
+            if(confirm("Удалить сохранение?")) { localStorage.clear(); location.reload(); }
+        };
+
         function fmt(n) { return Math.floor(n).toLocaleString('ru-RU'); }
-        function flashErr() { document.body.style.backgroundColor = '#200'; setTimeout(()=>document.body.style.backgroundColor=var('--bg'), 100); }
+        function flashErr() { document.body.style.backgroundColor = '#300'; setTimeout(()=>document.body.style.backgroundColor='', 150); }
 
-        // --- CORE ACTIONS ---
-        window.clickESIM = function() {
-            game.bal += game.clickVal * getMult();
-            updateUI();
-        };
+        window.clickESIM = function() { game.bal += 1; updateUI(); };
+        window.buySims = (amt, cost) => { if(game.bal >= cost) { game.bal-=cost; game.sims+=amt; logMsg(`Куплено ${amt} SIM`); updateUI(); } else flashErr(); };
 
-        window.buySims = function(amt, cost) {
-            if(game.bal >= cost) { game.bal-=cost; game.sims+=amt; logMsg(`Закуплено ${amt} SIM`); updateUI(); } else flashErr();
-        };
-
-        window.buyBribe = function() {
-            if(game.bal >= game.bribeCost) {
-                game.bal -= game.bribeCost; game.risk = Math.max(0, game.risk - 30);
-                game.bribeCost = Math.floor(game.bribeCost * 1.3);
-                document.getElementById('bribe-price').innerText = fmt(game.bribeCost);
-                logMsg("Майор получил на лапу. Риск снижен."); updateUI();
-            } else flashErr();
-        };
-
-        function getMult() {
-            let m = 1.0;
-            game.businesses.forEach(b => { m += b.count * b.mult; });
-            return m;
-        }
-
-        // --- UI RENDERING (ANTI-LAG) ---
-        window.navView = function(v) {
-            game.view = v;
-            document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
-            let nb = document.getElementById('nav-' + v); if(nb) nb.classList.add('active');
-            renderView();
-        };
-
+        // --- NAV ---
+        window.navView = v => { game.view = v; document.querySelectorAll('.btn-nav').forEach(b=>b.classList.remove('active')); document.getElementById('nav-'+v).classList.add('active'); renderView(); };
         const vCont = document.getElementById('t-view-container');
 
         function renderView() {
-            if(game.view === 'map') renderMap();
-            else if(game.view === 'apt') renderApt(game.activeApt);
-            else if(game.view === 'contracts') renderContracts();
-            else if(game.view === 'empire') renderEmpire();
-            else if(game.view === 'realty') renderRealty();
+            if(game.view==='map') renderMap();
+            else if(game.view==='apt') renderApt(game.activeApt);
+            else if(game.view==='contracts') renderContracts();
+            else if(game.view==='empire') renderEmpire();
+            else if(game.view==='realty') renderRealty();
         }
 
         function renderMap() {
@@ -443,21 +391,17 @@
                 let totalBad = 0, totalSims = a.boxes.length * 32;
                 a.boxes.forEach(b => totalBad += b.bad);
                 let ok = totalSims - totalBad;
-                let stat = a.temp >= 85 ? `<span class="st-err status-badge">🔥 ОТКЛЮЧЕНО</span>` :
-                           totalBad > (totalSims*0.3) ? `<span class="st-warn status-badge">⚠️ СЕРВИС</span>` : `<span class="st-ok status-badge">🟢 ОК</span>`;
-                
                 h += `<div class="apt-card" onclick="game.activeApt=${a.id}; navView('apt');">
                     <div>
-                        <div style="font-weight:bold; color:var(--primary); font-size:1.1rem;">${a.name}</div>
-                        <div style="font-size:0.8rem; color:#888;">Боксов: ${a.boxes.length}/${a.slots} | SIM OK: <span style="color:#0f0">${ok}</span> | Сгорело: <span style="color:#f00">${totalBad}</span> | ${Math.floor(a.temp)}°C</div>
+                        <div style="font-weight:bold; color:var(--primary);">${a.name}</div>
+                        <div style="font-size:0.8rem; color:#888;">Боксы: ${a.boxes.length}/${a.slots} | SIM OK: <span style="color:#0f0">${ok}</span> | Сгорело: <span style="color:#f00">${totalBad}</span></div>
                     </div>
-                    <div>${stat}</div>
+                    <div><span class="st-ok status-badge">АКТИВНО</span></div>
                 </div>`;
             });
             vCont.innerHTML = h + `</div>`;
         }
 
-        // OPTIMIZED RACK VIEW (No 32 divs per box!)
         function renderApt(id) {
             let a = game.apts.find(x => x.id === id);
             if(!a) { navView('map'); return; }
@@ -469,36 +413,29 @@
                     <div style="font-size:0.8rem; margin-top:5px;">Темп: <b style="color:${tC}">${Math.floor(a.temp)}°C</b> <div class="temp-bar-bg"><div class="temp-bar" style="width:${Math.min(100,a.temp)}%; background:${tC}"></div></div> ${a.ac?'<span style="color:var(--secondary)">[Кондей]</span>':''}</div>
                 </div>
                 <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                    <button class="btn-main" style="width:auto; padding:4px 8px;" onclick="buyBox(${a.id})" ${a.boxes.length>=a.slots?'disabled':''}>+ SIM-BOX (10k ₽)</button>
-                    ${!a.ac ? `<button class="btn-main" style="width:auto; padding:4px 8px; border-color:var(--secondary); color:var(--secondary);" onclick="buyAC(${a.id})">❄️ Кондей (25k ₽)</button>` : ''}
+                    <button class="btn-main" style="width:auto; padding:4px 8px;" onclick="buyBox(${a.id})" ${a.boxes.length>=a.slots?'disabled':''}>+ SIM-Box (15k ₽)</button>
+                    ${!a.ac ? `<button class="btn-main" style="width:auto; padding:4px 8px; border-color:var(--secondary); color:var(--secondary);" onclick="buyAC(${a.id})">❄️ Кондей (40k ₽)</button>` : ''}
                 </div>
             </div>
             <button class="btn-main" style="border-color:var(--warn); color:var(--warn); margin-bottom:15px;" onclick="repairApt(${a.id})">🔄 ПОЧИНИТЬ ВСЕ БОКСЫ (Требуются SIM)</button>
-            <div class="rack-container">
-                <div style="font-size:0.8rem; color:#555; margin-bottom:5px;">// SERVER RACK STATUS //</div>`;
+            <div class="rack-container">`;
             
             a.boxes.forEach((b, i) => {
                 let ok = b.total - b.bad;
                 let led = b.bad === b.total ? 'led-off' : 'led-on';
                 h += `<div class="rack-unit">
-                    <div class="rack-info">
-                        <span class="rack-led ${led}"></span>
-                        <span style="color:#aaa;">[BOX-${(i+1).toString().padStart(2,'0')}]</span>
-                        <span>SIM: <b style="color:#0f0">${ok}</b>/<b style="color:#f00">${b.bad}</b></span>
-                    </div>
+                    <div class="rack-info"><span class="rack-led ${led}"></span><span>[BOX-${(i+1).toString().padStart(2,'0')}]</span><span>SIM: <b style="color:#0f0">${ok}</b>/<b style="color:#f00">${b.bad}</b></span></div>
                     <button class="btn-repair" onclick="repairBox(${a.id}, ${i})" ${b.bad===0?'disabled':''}>🔄 Fix (${b.bad})</button>
                 </div>`;
             });
-            if(a.boxes.length===0) h += `<p style="color:#555; padding:10px;">Стойка пуста. Купите оборудование.</p>`;
-            h += `</div>`;
-            vCont.innerHTML = h;
+            vCont.innerHTML = h + `</div>`;
         }
 
         function renderContracts() {
-            let h = `<h3>🏦 ТАРИФЫ ТРАФИКА</h3><p style="font-size:0.8rem; color:#888; margin-bottom:10px;">Больше денег = больше риска и сгоревших симок.</p>`;
+            let h = `<h3>🏦 ТАРИФЫ ТРАФИКА</h3>`;
             Object.keys(game.tariffs).forEach(k => {
                 let t = game.tariffs[k]; let act = game.tariff === k;
-                h += `<div class="apt-card" style="border-color:${act?'var(--primary)':'#1a331a'}" onclick="game.tariff='${k}'; logMsg('Включен тариф: '+game.tariffs['${k}'].name); renderContracts();">
+                h += `<div class="apt-card" style="border-color:${act?'var(--primary)':'#1a331a'}" onclick="game.tariff='${k}'; renderContracts();">
                     <div><div style="font-weight:bold; color:${act?'var(--primary)':'#ccc'}">${t.name}</div><div style="font-size:0.75rem; color:#777;">${t.desc}</div></div>
                     <button class="btn-main" style="width:auto; padding:4px 8px; background:${act?'var(--primary)':'#000'}; color:${act?'#000':'var(--primary)'}">${act?'АКТИВЕН':'ВЫБРАТЬ'}</button>
                 </div>`;
@@ -507,7 +444,7 @@
         }
 
         function renderEmpire() {
-            let h = `<h3>🏢 БИЗНЕС-СЕТЬ</h3><p style="font-size:0.8rem; color:#888; margin-bottom:10px;">Пассивный доход и глобальные множители.</p>`;
+            let h = `<h3>🏢 БИЗНЕСЫ</h3>`;
             game.businesses.forEach((b, i) => {
                 h += `<div class="apt-card" style="cursor:default">
                     <div><div style="font-weight:bold; color:var(--secondary)">${b.name} [x${b.count}]</div><div style="font-size:0.75rem; color:#777;">${b.desc}</div></div>
@@ -518,71 +455,37 @@
         }
 
         function renderRealty() {
-            let h = `<h3>🛒 ПОКУПКА НЕДВИЖИМОСТИ</h3>`;
+            let h = `<h3>🛒 НЕДВИЖИМОСТЬ</h3>`;
             game.realty.forEach((r, i) => {
                 h += `<div class="apt-card" style="cursor:default">
-                    <div><div style="font-weight:bold; color:var(--primary)">${r.name}</div><div style="font-size:0.75rem; color:#777;">Вместимость: ${r.slots} боксов</div></div>
+                    <div><div style="font-weight:bold; color:var(--primary)">${r.name}</div><div style="font-size:0.75rem; color:#777;">Слоты: ${r.slots} боксов</div></div>
                     <button class="btn-main" style="width:auto; padding:4px 8px;" onclick="buyRealty(${i})">Купить (${fmt(r.price)} ₽)</button>
                 </div>`;
             });
-            if(game.realty.length===0) h += `<p style="color:#555">Все объекты выкуплены.</p>`;
+            if(game.realty.length===0) h += `<p style="color:#555">Всё выкуплено.</p>`;
             vCont.innerHTML = h;
         }
 
         function renderUpgrades() {
-            let list = document.getElementById('upgrades-list');
-            if(!list) return;
+            let lst = document.getElementById('upgrades-list'); if(!lst) return;
             let h = '';
             Object.keys(game.upgrades).forEach(k => {
                 let u = game.upgrades[k];
-                h += `<div class="apt-card" style="cursor:default; border-color:${u.owned?'#555':'var(--primary)'}">
-                    <div>
-                        <div style="font-weight:bold; color:${u.owned?'#666':'var(--secondary)'}">${u.name}</div>
-                        <div style="font-size:0.75rem; color:#888;">${u.desc}</div>
-                    </div>
+                h += `<div class="apt-card" style="cursor:default">
+                    <div><div style="font-weight:bold; color:${u.owned?'#666':'var(--secondary)'}">${u.name}</div><div style="font-size:0.75rem; color:#888;">${u.desc}</div></div>
                     <button class="btn-main" style="width:auto; padding:5px 10px;" onclick="buyUpgrade('${k}')" ${u.owned?'disabled':''}>${u.owned?'КУПЛЕНО':fmt(u.cost)+' ₽'}</button>
                 </div>`;
             });
-            list.innerHTML = h;
+            lst.innerHTML = h;
         }
 
-        // --- LOGIC ACTIONS ---
-        window.buyBox = id => {
-            let a = game.apts.find(x => x.id === id);
-            if(game.bal >= 10000 && a.boxes.length < a.slots) { game.bal-=10000; a.boxes.push({ bad: 0, total: 32 }); logMsg("Установлен новый SIM-бокс."); updateUI(); renderApt(id); } else flashErr();
-        };
-        window.buyAC = id => {
-            if(game.bal >= 25000) { game.bal-=25000; game.apts.find(x=>x.id===id).ac = true; logMsg("Установлен кондиционер."); updateUI(); renderApt(id); } else flashErr();
-        };
-        window.repairBox = (aId, bIdx) => {
-            let b = game.apts.find(x=>x.id===aId).boxes[bIdx];
-            if(b.bad > 0 && game.sims >= b.bad) { game.sims -= b.bad; b.bad = 0; updateUI(); renderApt(aId); } else flashErr();
-        };
-        window.repairApt = aId => {
-            let a = game.apts.find(x=>x.id===aId); let need = 0;
-            a.boxes.forEach(b => need+=b.bad);
-            if(need > 0 && game.sims >= need) { a.boxes.forEach(b=>b.bad=0); game.sims-=need; updateUI(); renderApt(aId); } else flashErr();
-        };
-        window.buyBiz = idx => {
-            let b = game.businesses[idx];
-            if(game.bal >= b.cost) { game.bal-=b.cost; b.count++; b.cost=Math.floor(b.cost*1.5); logMsg(`Куплено: ${b.name}`); updateUI(); renderEmpire(); } else flashErr();
-        };
-        window.buyRealty = idx => {
-            let r = game.realty[idx];
-            if(game.bal >= r.price) {
-                game.bal-=r.price; game.apts.push({ id: r.id, name: r.name, slots: r.slots, temp: 24, ac: false, boxes: [{bad:0,total:32}] });
-                game.realty.splice(idx,1); logMsg(`Куплена недвижка: ${r.name}`); updateUI(); renderRealty();
-            } else flashErr();
-        };
-        window.buyUpgrade = k => {
-            let u = game.upgrades[k];
-            if(!u.owned && game.bal >= u.cost) {
-                game.bal -= u.cost; u.owned = true;
-                if(k==='autoclick') setInterval(() => clickESIM(), 500);
-                logMsg(`Установлен софт: ${u.name}`);
-                updateUI(); renderUpgrades();
-            } else flashErr();
-        };
+        window.buyBox = id => { let a=game.apts.find(x=>x.id===id); if(game.bal>=15000 && a.boxes.length<a.slots){ game.bal-=15000; a.boxes.push({bad:0, total:32}); updateUI(); renderApt(id); } else flashErr(); };
+        window.buyAC = id => { if(game.bal>=40000){ game.bal-=40000; game.apts.find(x=>x.id===id).ac=true; updateUI(); renderApt(id); } else flashErr(); };
+        window.repairBox = (aId, bIdx) => { let b=game.apts.find(x=>x.id===aId).boxes[bIdx]; if(b.bad>0 && game.sims>=b.bad){ game.sims-=b.bad; b.bad=0; updateUI(); renderApt(aId); } else flashErr(); };
+        window.repairApt = aId => { let a=game.apts.find(x=>x.id===aId); let need=0; a.boxes.forEach(b=>need+=b.bad); if(need>0 && game.sims>=need){ a.boxes.forEach(b=>b.bad=0); game.sims-=need; updateUI(); renderApt(aId); } else flashErr(); };
+        window.buyBiz = idx => { let b=game.businesses[idx]; if(game.bal>=b.cost){ game.bal-=b.cost; b.count++; b.cost=Math.floor(b.cost*1.6); updateUI(); renderEmpire(); } else flashErr(); };
+        window.buyRealty = idx => { let r=game.realty[idx]; if(game.bal>=r.price){ game.bal-=r.price; game.apts.push({id:r.id, name:r.name, slots:r.slots, temp:24, ac:false, boxes:[{bad:0, total:32}]}); game.realty.splice(idx,1); updateUI(); renderRealty(); } else flashErr(); };
+        window.buyUpgrade = k => { let u=game.upgrades[k]; if(!u.owned && game.bal>=u.cost){ game.bal-=u.cost; u.owned=true; updateUI(); renderUpgrades(); } else flashErr(); };
 
         // --- CRYPTO ---
         function drawCrypto() {
@@ -599,83 +502,135 @@
             document.getElementById('cr-price').innerText = fmt(cryptoData.price) + " ₽";
             document.getElementById('cr-hold').innerText = fmt(cryptoData.holdings) + " $KURCH";
         }
-        window.buyCrypto = frac => { let s = game.bal*frac; if(s>=cryptoData.price){ cryptoData.holdings += s/cryptoData.price; game.bal-=s; drawCrypto(); updateUI(); } };
-        window.sellCrypto = () => { if(cryptoData.holdings>0){ game.bal += cryptoData.holdings*cryptoData.price; cryptoData.holdings=0; drawCrypto(); updateUI(); } };
-        window.pumpCrypto = () => {
-            game.risk += 20;
-            if(Math.random()<0.6) { cryptoData.price = Math.floor(cryptoData.price * (2+Math.random()*3)); logMsg("ПАМП УДАЛСЯ!"); }
-            else { cryptoData.price = Math.floor(cryptoData.price * 0.5); logMsg("Дамп... Хомяки слили курс."); }
-            cryptoData.history.push(cryptoData.price); cryptoData.history.shift(); drawCrypto(); updateUI();
-        };
+        window.buyCrypto = frac => { let s=game.bal*frac; if(s>=cryptoData.price){ cryptoData.holdings+=s/cryptoData.price; game.bal-=s; drawCrypto(); updateUI(); } };
+        window.sellCrypto = () => { if(cryptoData.holdings>0){ game.bal+=cryptoData.holdings*cryptoData.price; cryptoData.holdings=0; drawCrypto(); updateUI(); } };
+        window.pumpCrypto = () => { if(Math.random()<0.55){ cryptoData.price=Math.floor(cryptoData.price*(2+Math.random()*2)); } else { cryptoData.price=Math.max(10, Math.floor(cryptoData.price*0.4)); } cryptoData.history.push(cryptoData.price); cryptoData.history.shift(); drawCrypto(); updateUI(); };
 
-        // --- DRONES ---
-        window.flyDrone = (cost, ch, rwd, srwd) => {
-            let l = document.getElementById('drone-log');
-            if(game.bal<cost) { l.innerText="Ошибка: Нет денег!"; return; }
-            game.bal-=cost; updateUI(); l.innerText = "Дрон в пути... Обход радаров ФСИН...";
+        window.flyDrone = (cost, ch, rwd) => {
+            let l = document.getElementById('drone-log'); if(game.bal<cost){l.innerText="Нет денег!"; return;}
+            game.bal-=cost; l.innerText="Дрон летит...";
             setTimeout(() => {
-                if(Math.random() <= ch) { game.bal+=rwd; game.sims+=srwd; l.innerHTML = `<span style="color:#0f0">УСПЕХ! Доставлено. +${fmt(rwd)} ₽</span>`; logMsg("Дрон вернулся с кушем."); }
-                else { game.risk += 25; l.innerHTML = `<span style="color:#f00">СБИТ РЭБ! ГРУЗ ПОТЕРЯН. Риск +25%</span>`; logMsg("Дрон перехвачен!"); }
+                if(Math.random()<=ch){ game.bal+=rwd; l.innerHTML=`<span style="color:#0f0">Успех! +${fmt(rwd)} ₽</span>`; }
+                else { l.innerHTML=`<span style="color:#f00">Сбит ПВО! Груз утерян.</span>`; }
                 updateUI();
-            }, 2000);
+            }, 1500);
         };
 
-        // --- GAME LOOP & ECONOMY ---
-        let autoSaveTimer = 0;
-        
+        // --- RAID & RANSOM MECHANICS ---
+        function getRaidChance() {
+            let base = Math.min(85, game.day * 2.5); // Растет с каждым днем в геометрической/линейной прогрессии
+            if(game.upgrades.bunker.owned) base *= 0.5;
+            return Math.round(base * 10) / 10;
+        }
+
+        function getRansomCost() {
+            // Растет с каждым днем в геометрической прогрессии
+            return Math.floor(20000 * Math.pow(1.35, game.day - 1));
+        }
+
+        let pendingRaid = false;
+
+        function triggerRaid() {
+            pendingRaid = true;
+            let cost = getRansomCost();
+            document.getElementById('raid-msg').innerText = `День ${game.day}: ОМОН ворвался в ваши квартиры в Подольске и Серпухове! Оборудование конфисковано.`;
+            document.getElementById('ransom-info').innerHTML = `Шанс откупиться: <b>20%</b><br>Сумма взятки майору: <b>${fmt(cost)} ₽</b>`;
+            document.getElementById('modal-raid').style.display = 'flex';
+        }
+
+        window.payRansom = function() {
+            let cost = getRansomCost();
+            if(Math.random() < 0.20) {
+                // 20% success
+                if(game.bal >= cost) {
+                    game.bal -= cost;
+                    alert(`✅ УСПЕХ!
+Майор принял взятку ${fmt(cost)} ₽. Дело закрыто, оборудование возвращено на точки!`);
+                    document.getElementById('modal-raid').style.display = 'none';
+                    pendingRaid = false;
+                } else {
+                    alert(`❌ Недостаточно средств для взятки (${fmt(cost)} ₽)! Вас увозят в СИЗО №3.`);
+                    triggerBSOD();
+                }
+            } else {
+                alert(`❌ НЕУДАЧА!
+Майор взял деньги, но начальник отдела передумал. Вас вязут в СИЗО №3!`);
+                triggerBSOD();
+            }
+        };
+
+        window.failRansom = function() {
+            alert("Вы отказались платить. Вас доставили в СИЗО №3.");
+            triggerBSOD();
+        };
+
+        function triggerBSOD() {
+            document.getElementById('modal-raid').style.display = 'none';
+            document.body.innerHTML = `<div style="background:#0000aa; color:#fff; width:100vw; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; font-family:Consolas; text-align:center; padding:30px;">
+                <h1 style="font-size:4rem; background:#fff; color:#0000aa; padding:0 20px; margin-bottom:20px;">ИГРА ОКОНЧЕНА</h1>
+                <p style="font-size:1.5rem; margin-bottom:15px;">Вы провели на свободе ${game.day} дней.</p>
+                <p style="font-size:1.2rem; margin-bottom:30px;">Ваша империя SIM-боксов полностью конфискована ФСБ.<br>Текущая постоянная резиденция: <b>СИЗО №3</b>.</p>
+                <button onclick="localStorage.clear(); location.reload();" style="padding:15px 30px; font-size:1.2rem; background:#000; color:#fff; border:2px solid #fff; cursor:pointer;">НАЧАТЬ ЗАНОВО</button>
+            </div>`;
+        }
+
+        // --- GAME LOOP ---
         function updateUI() {
             document.getElementById('t-bal').innerText = fmt(game.bal) + " ₽";
             document.getElementById('t-inc').innerText = fmt(game.inc) + " ₽/с";
             document.getElementById('t-sims').innerText = fmt(game.sims);
-            document.getElementById('t-mult').innerText = "x" + getMult().toFixed(1);
+            document.getElementById('t-mult').innerText = "x" + (1.0 + game.businesses.reduce((s,b)=>s+b.count*0.15, 0)).toFixed(1);
 
-            document.getElementById('udo-fill').style.width = Math.min(100, (game.bal/UDO_GOAL)*100) + "%";
+            let pct = Math.min(100, (game.bal/UDO_GOAL)*100);
+            document.getElementById('udo-fill').style.width = pct + "%";
             document.getElementById('udo-label').innerText = `${fmt(game.bal)} / 10,000,000 ₽`;
 
-            let r = Math.min(100, Math.max(0, game.risk));
-            document.getElementById('t-risk-bar').style.width = r + "%";
-            
-            // Courtroom logic check
-            if(r >= 100 && game.bal > 0) {
-                // Simplified punishment for anti-lag edition to keep flow
-                let fine = Math.floor(game.bal * 0.4);
-                game.bal -= fine;
-                game.risk = 0;
-                alert(`🚨 ОБЛАВА ОМОН! 🚨
-Шкала риска достигла 100%.
-Точки обесточены, адвокаты взяли взятку ${fmt(fine)} ₽.
-Риск сброшен.`);
-            }
+            let rc = getRaidChance();
+            document.getElementById('raid-chance-label').innerText = `🚨 ШАНС ОБЛАВЫ СЕГОДНЯ: ${rc}%`;
+            let rBar = document.getElementById('t-risk-bar');
+            rBar.style.width = rc + "%";
+            document.getElementById('t-risk-text').innerText = `Шанс облавы: ${rc}%`;
+
+            let dSec = DAY_DURATION_SEC - game.dayTime;
+            let m = Math.floor(dSec / 60); let s = dSec % 60;
+            document.getElementById('day-counter').innerText = `📅 ДЕНЬ ${game.day} (до смены: ${m}:${s<10?'0':''}${s})`;
         }
 
         setInterval(() => {
+            if(pendingRaid) return;
+
+            // Day Timer (5 minutes per day)
+            game.dayTime++;
+            if(game.dayTime >= DAY_DURATION_SEC) {
+                game.dayTime = 0;
+                game.day++;
+                logMsg(`Наступил ДЕНЬ ${game.day}! Шанс облавы вырос.`);
+                
+                // Roll for daily raid
+                let rc = getRaidChance();
+                if(Math.random() * 100 < rc) {
+                    triggerRaid();
+                    return;
+                }
+            }
+
             let t = game.tariffs[game.tariff];
             let sInc = 0;
-            let drops = game.businesses.find(b=>b.id==='dropnet').count * 2; // auto repair 2 sims/sec per upgrade
-            
-            let vpnMult = game.upgrades.vpn.owned ? 0.5 : 1.0;
-            let stealthMult = game.upgrades.stealth.owned ? 0.4 : 1.0;
+            let vpnRed = game.upgrades.vpn.owned ? 0.5 : 1.0;
 
             game.apts.forEach(a => {
-                let heat = a.boxes.length * 1.5;
-                let cool = a.ac ? 4.0 : 0.5;
+                let heat = a.boxes.length * 1.2;
+                let cool = a.ac ? 3.5 : 0.4;
                 a.temp = Math.max(20, a.temp + heat - cool);
                 let oh = a.temp >= 85;
 
                 let act = 0;
                 a.boxes.forEach(b => {
-                    // Auto repair
-                    if(b.bad > 0 && drops > 0 && game.sims > 0) {
-                        let fix = Math.min(b.bad, drops, game.sims);
-                        b.bad -= fix; drops -= fix; game.sims -= fix;
-                    }
-                    // Income & Burn
                     let ok = b.total - b.bad;
                     if(!oh) {
                         act += ok;
-                        // Determine burn based on active SIMs
                         for(let k=0; k<ok; k++) {
-                            if(Math.random() < (t.burn * vpnMult)) b.bad++;
+                            if(Math.random() < (t.burn * vpnRed)) b.bad++;
                         }
                     }
                 });
@@ -683,73 +638,38 @@
             });
 
             let bInc = 0; game.businesses.forEach(b => bInc += b.count * b.inc);
-            if(game.upgrades.crypto_bot.owned) bInc += 25000;
+            let mult = 1.0 + game.businesses.reduce((s,b)=>s+b.count*0.15, 0);
 
-            game.inc = (sInc + bInc) * getMult();
+            game.inc = (sInc + bInc) * mult;
             game.bal += game.inc;
 
-            if(game.inc > 0) game.risk += t.riskAdd * stealthMult;
-
-            // Crypto
-            let d = (Math.random()-0.48)*15;
-            cryptoData.price = Math.max(5, Math.floor(cryptoData.price + d));
+            let d = (Math.random()-0.48)*10;
+            cryptoData.price = Math.max(10, Math.floor(cryptoData.price + d));
             cryptoData.history.push(cryptoData.price); cryptoData.history.shift();
 
             updateUI(); drawCrypto();
-            
-            // Re-render only active tab for performance
-            if(game.view === 'map') renderMap();
-            else if(game.view === 'apt') renderApt(game.activeApt);
-
-            // Auto-Save
-            autoSaveTimer++;
-            if(autoSaveTimer >= 5) { saveGame(); autoSaveTimer = 0; }
-
+            if(game.view==='map') renderMap(); else if(game.view==='apt') renderApt(game.activeApt);
+            saveGame();
         }, 1000);
 
-        // --- EPIC UDO ENDING ---
+        // UDO Win
         window.claimUDO = function() {
             if(game.bal >= UDO_GOAL) {
                 game.bal -= UDO_GOAL;
                 document.getElementById('epic-ending').style.display = 'flex';
-                let lines = [
-                    "INITIATING PROTOCOL: FREEDOM_V2.exe...",
-                    "CONNECTING TO FSIN MAINFRAME [PROXY: PODOLSK_1]...",
-                    "BYPASSING FIREWALL... [SUCCESS]",
-                    "TRANSFERRING FUNDS: 10,000,000 RUB...",
-                    "10% ... 40% ... 80% ... 100%",
-                    "FUNDS SECURED IN OFFSHORE ACCOUNTS.",
-                    "LOCATING INMATE RECORD: PIVOVAROV, OLEG (2010)",
-                    "<span class='epic-red'>DELETING CRIMINAL RECORD...</span>",
-                    "<span class='epic-red'>OVERWRITING DATABASE...</span>",
-                    "STATUS: CLEAN.",
-                    "<br>",
-                    "<span class='epic-purple'>[ СИСТЕМА УДО АКТИВИРОВАНА ]</span>",
-                    "Двери СИЗО №3 открываются.",
-                    "На улице ждет тонированный Maybach.",
-                    "Вы вышли победителем. Империя работает на вас вечно.",
-                    "<br><button class='btn-main' style='width:300px; font-size:1.2rem;' onclick='document.getElementById(`epic-ending`).style.display=`none`;'>ПРОДОЛЖИТЬ ИГРУ</button>"
-                ];
                 let ee = document.getElementById('epic-ending');
-                ee.innerHTML = '';
-                let delay = 0;
-                lines.forEach((l, i) => {
-                    setTimeout(() => {
-                        let d = document.createElement('div');
-                        d.className = 'epic-line'; d.innerHTML = l;
-                        ee.appendChild(d);
-                    }, delay);
-                    delay += (i === lines.length-1) ? 0 : 800; // delay between lines
-                });
+                ee.innerHTML = `<h1 style="color:var(--primary); font-size:3rem; margin-bottom:20px;">🎉 УДО ИЗ СИЗО №3 УСПЕШНО ОПЛАЧЕНО! 🎉</h1>
+                <p style="font-size:1.3rem; color:#fff; line-height:1.6; margin-bottom:30px;">
+                    Вы провели на свободе <b>${game.day} дней</b>, построили теневую телеком-империю от Подольска до Серпухова, пережили облавы ФСБ и выкупили свободу за 10 миллионов рублей!<br>У ворот вас ждет тонированный Maybach.
+                </p>
+                <button class="btn-main" style="width:300px; font-size:1.2rem;" onclick="location.reload();">ИГРАТЬ СНОВА</button>`;
             } else {
-                alert("Нужно 10 000 000 ₽! Качай империю!");
+                alert(`Нужно 10 000 000 ₽ на УДО! Сейчас у вас: ${fmt(game.bal)} ₽.`);
             }
         };
 
-        // Boot
+        // Init
         renderMap(); renderUpgrades(); drawCrypto(); updateUI();
-        if(game.upgrades.autoclick.owned) setInterval(() => clickESIM(), 500);
-
     </script>
 </body>
 </html>
